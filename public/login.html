@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tempo Navigator - Login</title>
+
+  <!-- ✅ Link to external CSS file -->
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+
+<!-- ✅ Navigation bar -->
+<nav class="navbar">
+  <div class="logo">Tempo Management System </div>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Services</a></li>
+    <li><a href="#">About Us</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="auth-buttons">
+    <!-- ✅ Login button stays on this page -->
+    <button class="login-btn">Login</button>
+    <!-- ✅ Sign Up button navigates to signup.html -->
+    <button class="signup-btn" onclick="window.location.href='signup.html'">Sign Up</button>
+  </div>
+</nav>
+
+<!-- ✅ Login form container -->
+<div class="login-container">
+  <div class="login-box">
+    <h2>Welcome back</h2>
+    <p>Login to your account to continue</p>
+
+    <!-- ✅ Role selection buttons -->
+    <div class="role-selection">
+      <button class="role-btn active" onclick="selectRole(this)">Passenger</button>
+      <button class="role-btn" onclick="selectRole(this)">Driver</button>
+      <button class="role-btn" onclick="selectRole(this)">Admin</button>
+    </div>
+
+    <!-- ✅ Login form -->
+    <form id="login-form">
+      <input type="email" placeholder="your@email.com" required />
+      <input type="password" placeholder="Password" required />
+      <div class="forgot-password">
+        <a href="#">Forgot password?</a>
+      </div>
+      <button type="submit" class="submit-btn">Login</button>
+    </form>
+
+    <!-- ✅ Link to signup.html for users without an account -->
+    <p class="signup-text">Don't have an account? <a href="signup.html">Sign up</a></p>
+  </div>
+</div>
+
+<!-- ✅ Script for role button toggle -->
+<script>
+  function selectRole(button) {
+    const buttons = document.querySelectorAll('.role-btn');
+    buttons.forEach((btn) => btn.classList.remove('active'));
+    button.classList.add('active');
+  }
+</script>
+
+<!-- ✅ Script to handle login form submit and API call -->
+<script>
+  document.getElementById('login-form').addEventListener('submit', async function (event) {
+    event.preventDefault(); // Prevent page refresh on submit
+
+    // ✅ Collect input values
+    const email = document.querySelector('input[type="email"]').value.trim();
+    const password = document.querySelector('input[type="password"]').value;
+    const role = document.querySelector('.role-btn.active').innerText; // Selected role
+
+    // ✅ Call backend API to validate login
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, role }),
+    });
+
+    const result = await response.json();
+
+    // ✅ Show backend response message
+    alert(result.message);
+
+    // ✅ Redirect based on role if login is successful
+    if (response.status === 200) {
+      if (result.role === 'Passenger') {
+        window.location.href = 'path.html'; // Passenger home page
+      } else if (result.role === 'Driver') {
+        window.location.href = 'driver-home.html'; // Driver home page
+      } else if (result.role === 'Admin') {
+        window.location.href = 'admin-dashboard.html'; // Admin dashboard
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

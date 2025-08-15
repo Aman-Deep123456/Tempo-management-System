@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tempo Navigator - Sign Up</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .signup-box {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 5px;
+      color: #1f3d56;
+    }
+    p {
+      margin-top: 0;
+      color: #6b7a99;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .role-selection {
+      margin-bottom: 20px;
+    }
+    .role-btn {
+      border: 1px solid #ddd;
+      background: white;
+      color: #333;
+      padding: 8px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: 600;
+      transition: background 0.3s, color 0.3s;
+    }
+    .role-btn.active, .role-btn:hover {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s ease;
+    }
+    .submit-btn:hover {
+      background-color: #2980b9;
+    }
+    .login-text {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+    .login-text a {
+      color: #3498db;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .login-text a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-box">
+    <h2>Create your account</h2>
+    <p>Sign up to start your journey</p>
+
+    <div class="role-selection">
+      <button type="button" class="role-btn active" onclick="selectRole(this)">Passenger</button>
+      <button type="button" class="role-btn" onclick="selectRole(this)">Driver</button>
+      <button type="button" class="role-btn" onclick="selectRole(this)">Admin</button>
+    </div>
+
+    <form id="signup-form">
+      <input type="text" placeholder="Full Name" required />
+      <input type="email" placeholder="Email Address" required />
+      <input type="password" placeholder="Create Password" required />
+      <input type="password" placeholder="Confirm Password" required />
+      <button type="submit" class="submit-btn">Sign Up</button>
+    </form>
+
+    <p class="login-text">
+      Already have an account?
+      <a href="login.html">Login</a>
+    </p>
+  </div>
+
+  <script>
+    function selectRole(button) {
+      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const role = document.querySelector('.role-btn.active').innerText;
+      const form = e.target;
+      const name = form.querySelector('input[placeholder="Full Name"]').value.trim();
+      const email = form.querySelector('input[type="email"]').value.trim();
+      const password = form.querySelector('input[placeholder="Create Password"]').value;
+      const confirmPassword = form.querySelector('input[placeholder="Confirm Password"]').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role }),
+        });
+
+        const result = await response.json();
+        alert(result.message);
+
+        if (response.status === 201) {
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        alert('An error occurred. Please try again later.');
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>

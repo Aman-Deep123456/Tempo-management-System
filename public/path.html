@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="path.css" />
+  <title>Route Finder</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .route-finder {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .input-field label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .input-field input {
+      padding: 12px;
+      font-size: 1rem;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .btn-group button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      min-width: 160px;
+    }
+
+    .btn-group button:hover {
+      background-color: #45a049;
+    }
+
+    #route-result {
+      margin-top: 30px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    #comparison-results {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    #floydwarshall-result,
+    #astar-result {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 700px) {
+      #comparison-results {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      #floydwarshall-result,
+      #astar-result {
+        width: 48%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🗺️ Route Comparison Tool</h1>
+    <section class="route-finder">
+      <h2>Find the Best Route</h2>
+
+      <div class="input-group">
+        <div class="input-field">
+          <label for="source">Source</label>
+          <input type="text" id="source" placeholder="Enter starting location" list="places" />
+        </div>
+        <div class="input-field">
+          <label for="destination">Destination</label>
+          <input type="text" id="destination" placeholder="Enter destination" list="places" />
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button id="compare-btn">Find Route</button>
+      </div>
+
+      <div id="route-result">
+        <div id="comparison-results">
+          <div id="floydwarshall-result"></div>
+          <div id="astar-result"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <datalist id="places"></datalist>
+
+  <script src="Route.js"></script>
+</body>
+</html>

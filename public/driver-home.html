@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tempo Navigator - Driver Dashboard</title>
+  <link rel="stylesheet" href="driver-home.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1 onclick="location.href='home.html'">Tempo Navigator</h1>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="#">Services</a>
+      <a href="#">About Us</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <div class="dashboard">
+    <div class="sidebar">
+      <div style="text-align: center">
+        <div style="font-size: 2rem;">👤</div>
+        <p><strong>Welcome back,</strong><br><span id="displayName">Driver John</span></p>
+        <p id="statusText">Driver Status <span id="statusBadge" class="offline-badge">Offline</span></p>
+        <button id="toggleStatusBtn" onclick="toggleStatus()">Go Online</button>
+        <a href="#">My Routes</a>
+        <a href="#">Route History</a>
+        <a href="#" onclick="toggleProfileSettings()">My Profile</a>
+        <button onclick="location.href='login.html'">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="section">
+        <h3>Vehicle Status</h3>
+        <div class="status-boxes">
+          <div class="box">
+            <strong>Vehicle ID</strong><br><span id="displayVehicleId">TN-05-AB-1234</span>
+          </div>
+          <div class="box">
+            <strong>Fuel Status</strong><br>75%
+          </div>
+          <div class="box">
+            <strong>Next Maintenance</strong><br>June 15, 2025
+          </div>
+        </div>
+      </div>
+
+      <div class="section profile-settings" id="profileSettings">
+        <h3>Edit Profile</h3>
+        <label for="name">Name</label>
+        <input type="text" id="name" placeholder="Enter name">
+        <label for="vehicleId">Vehicle ID</label>
+        <input type="text" id="vehicleId" placeholder="Enter vehicle ID">
+        <label for="phone">Phone Number</label>
+        <input type="text" id="phone" placeholder="Enter phone number">
+        <label for="email">Email ID</label>
+        <input type="email" id="email" placeholder="Enter email">
+        <button class="btn btn-green" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
