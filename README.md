@@ -8,7 +8,7 @@ This project addresses the complexity of manual travel planning by providing a d
 
 ## ✨ Key Features
 
-- **Advanced Pathfinding**: Implements and benchmarks multiple core graph algorithms, including **Dijkstra's**, **A***, Breadth-First Search (**BFS**), and Depth-First Search (**DFS**), to identify optimal travel routes based on user-defined source and destination.
+- **Advanced Path finding**: Implements and benchmarks multiple core graph algorithms, including **Dijkstra's**, **A***, Breadth-First Search (**BFS**), and Depth-First Search (**DFS**), to identify optimal travel routes based on user-defined source and destination.
 - **Performance Optimization**: Achieves sub-second route calculations, significantly improving travel planning efficiency by **over 70%** compared to traditional manual methods.
 - **Dynamic Route Visualization**: Provides a live, visual representation of the calculated optimal path on a map, making it easy to follow your journey.
 - **Comprehensive Trip Details**: Computes and displays critical trip information, including total fare and distance in kilometers, based on the user's selected route.
