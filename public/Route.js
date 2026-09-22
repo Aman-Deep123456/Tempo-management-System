@@ -18,7 +18,6 @@ const routes = [
   { source: "Dehradun", destination: "Paltan Bazaar", distance: 2 },
   { source: "Dehradun", destination: "Vasant Vihar", distance: 4 }
 ];
-
 const coordinates = {
   "Clock Tower": [30.3244, 78.0339],
   "Rajpur Road": [30.3683, 78.0800],
