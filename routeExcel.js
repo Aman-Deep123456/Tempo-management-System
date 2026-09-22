@@ -33,9 +33,7 @@ function addRoute({ source, destination, distance, duration }) {
     saveRoutes();
     return route;
 }
-
 function findRoute(source, destination) {
     return routes.find(r => r.Source === source && r.Destination === destination);
 }
-
 module.exports = { addRoute, findRoute };
