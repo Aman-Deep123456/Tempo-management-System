@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tempo Navigator - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f6f8fb;
+    }
+    header {
+      background-color: #ffffff;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    header h1 {
+      color: #124d1d;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin: 0;
+    }
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: #333;
+    }
+    .dashboard {
+      display: flex;
+      padding: 2rem;
+      gap: 2rem;
+    }
+    .sidebar {
+      width: 250px;
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .sidebar button,
+    .sidebar a {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.6rem;
+      border-radius: 8px;
+      text-align: left;
+      background: #17612a;
+      color: white;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+    .content {
+      flex: 1;
+    }
+    .section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .section h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .stat-card {
+      background: #f9fafb;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card h4 {
+      margin: 0 0 10px 0;
+      color: #666;
+    }
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #124d1d;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 onclick="location.href='login.html'">Tempo Navigator (Admin)</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Manage Users</a>
+      <a href="#">Reports</a>
+    </nav>
+  </header>
+
+  <div class="dashboard">
+    <div class="sidebar">
+      <div style="text-align: center">
+        <div style="font-size: 2rem;">👑</div>
+        <p><strong>Welcome,</strong><br>Admin User</p>
+        <button onclick="location.href='login.html'">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="section">
+        <h3>System Overview</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>Total Drivers</h4>
+            <div class="value">42</div>
+          </div>
+          <div class="stat-card">
+            <h4>Active Trips</h4>
+            <div class="value">15</div>
+          </div>
+          <div class="stat-card">
+            <h4>Total Passengers</h4>
+            <div class="value">1,024</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
