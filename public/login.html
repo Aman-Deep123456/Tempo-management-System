@@ -74,27 +74,16 @@
     const password = document.querySelector('input[type="password"]').value;
     const role = document.querySelector('.role-btn.active').innerText; // Selected role
 
-    // ✅ Call backend API to validate login
-    const response = await fetch('http://localhost:3000/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, role }),
-    });
-
-    const result = await response.json();
-
-    // ✅ Show backend response message
-    alert(result.message);
+    // ✅ Mock backend response for showcase
+    alert('Login successful');
 
     // ✅ Redirect based on role if login is successful
-    if (response.status === 200) {
-      if (result.role === 'Passenger') {
-        window.location.href = 'path.html'; // Passenger home page
-      } else if (result.role === 'Driver') {
-        window.location.href = 'driver-home.html'; // Driver home page
-      } else if (result.role === 'Admin') {
-        window.location.href = 'admin-dashboard.html'; // Admin dashboard
-      }
+    if (role === 'Passenger') {
+      window.location.href = 'path.html'; // Passenger home page
+    } else if (role === 'Driver') {
+      window.location.href = 'driver-home.html'; // Driver home page
+    } else if (role === 'Admin') {
+      window.location.href = 'admin-dashboard.html'; // Admin dashboard
     }
   });
 </script>
