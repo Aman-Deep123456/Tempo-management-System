@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tempo Navigator - Sign Up</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,7 +14,31 @@
       align-items: center;
       height: 100vh;
       margin: 0;
+      overflow: hidden; /* Prevent scroll on splash */
     }
+
+    /* Splash Screen Styles */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+    }
+    #lottie-animation {
+      width: 100%;
+      max-width: 500px;
+      height: 100%;
+      max-height: 500px;
+    }
+
+    /* Hidden initially */
     .signup-box {
       background: white;
       padding: 30px 40px;
@@ -21,6 +46,9 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 350px;
       text-align: center;
+      display: none; 
+      opacity: 0;
+      transition: opacity 0.5s ease-in;
     }
     h2 {
       margin-bottom: 5px;
@@ -47,12 +75,12 @@
       transition: background 0.3s, color 0.3s;
     }
     .role-btn.active, .role-btn:hover {
-      background: #3498db;
+      background: #17612a;
       color: white;
-      border-color: #3498db;
+      border-color: #17612a;
     }
     input[type="text"],
-    input[type="email"],
+    input[type='email'],
     input[type="password"] {
       width: 100%;
       padding: 12px 15px;
@@ -60,11 +88,12 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 15px;
+      box-sizing: border-box;
     }
     .submit-btn {
       width: 100%;
       padding: 12px;
-      background-color: #3498db;
+      background-color: #17612a;
       border: none;
       border-radius: 6px;
       color: white;
@@ -75,7 +104,7 @@
       transition: background-color 0.3s ease;
     }
     .submit-btn:hover {
-      background-color: #2980b9;
+      background-color: #124d1d;
     }
     .login-text {
       margin-top: 20px;
@@ -83,7 +112,7 @@
       color: #555;
     }
     .login-text a {
-      color: #3498db;
+      color: #17612a;
       text-decoration: none;
       font-weight: 600;
     }
@@ -93,7 +122,13 @@
   </style>
 </head>
 <body>
-  <div class="signup-box">
+
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <div id="lottie-animation"></div>
+  </div>
+
+  <div class="signup-box" id="main-content">
     <h2>Create your account</h2>
     <p>Sign up to start your journey</p>
 
@@ -118,23 +153,57 @@
   </div>
 
   <script>
+    // Initialize Lottie Animation
+    var animation = lottie.loadAnimation({
+      container: document.getElementById("lottie-animation"),
+      renderer: "svg",
+      loop: false,
+      autoplay: true,
+      path: "Animation.json" // using the provided json file
+    });
+
+    // When animation completes or after a timeout, show the signup form
+    const showMainContent = () => {
+      const splash = document.getElementById("splash-screen");
+      const main = document.getElementById("main-content");
+      
+      // Fade out splash
+      splash.style.opacity = "0";
+      setTimeout(() => {
+        splash.style.display = "none";
+        document.body.style.overflow = "auto";
+        
+        // Fade in main
+        main.style.display = "block";
+        setTimeout(() => {
+          main.style.opacity = "1";
+        }, 50);
+      }, 500); // Wait for transition
+    };
+
+    // Trigger transition when animation finishes
+    animation.addEventListener("complete", showMainContent);
+
+    // Fallback just in case animation fails to load or takes too long
+    setTimeout(showMainContent, 4000);
+
     function selectRole(button) {
-      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
+      document.querySelectorAll(".role-btn").forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
     }
 
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    document.getElementById("signup-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const role = document.querySelector('.role-btn.active').innerText;
+      const role = document.querySelector(".role-btn.active").innerText;
       const form = e.target;
-      const name = form.querySelector('input[placeholder="Full Name"]').value.trim();
-      const email = form.querySelector('input[type="email"]').value.trim();
-      const password = form.querySelector('input[placeholder="Create Password"]').value;
-      const confirmPassword = form.querySelector('input[placeholder="Confirm Password"]').value;
+      const name = form.querySelector("input[placeholder='Full Name']").value.trim();
+      const email = form.querySelector("input[type='email']").value.trim();
+      const password = form.querySelector("input[placeholder='Create Password']").value;
+      const confirmPassword = form.querySelector("input[placeholder='Confirm Password']").value;
 
       if (password !== confirmPassword) {
-        alert('Passwords do not match!');
+        alert("Passwords do not match!");
         return;
       }
 
