@@ -2,7 +2,7 @@
 
 > A full-stack route optimization and management application designed to simplify public transit in Dehradun.
 
-This project addresses the complexity of manual travel planning by providing a dynamic, data-driven solution for commuters. It leverages advanced graph algorithms to compute the most efficient travel paths, estimated fares, and distances, offering users a seamless experience through a responsive UI and real-time mapping.
+
 
 ---
 
