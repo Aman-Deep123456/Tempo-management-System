@@ -12,13 +12,7 @@
 
 <!-- ✅ Navigation bar -->
 <nav class="navbar">
-  <div class="logo">Tempo Management System </div>
-  <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">Services</a></li>
-    <li><a href="#">About Us</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
+  <div class="logo">Tempo Management System</div>
   <div class="auth-buttons">
     <!-- ✅ Login button stays on this page -->
     <button class="login-btn">Login</button>
@@ -31,23 +25,27 @@
 <div class="login-container">
   <div class="login-box">
     <h2>Welcome back</h2>
-    <p>Login to your account to continue</p>
+    <p id="role-subtitle" class="role-subtitle">Logging in as <span class="role-tag">Passenger 🎒</span></p>
 
-    <!-- ✅ Role selection buttons -->
-    <div class="role-selection">
-      <button class="role-btn active" onclick="selectRole(this)">Passenger</button>
-      <button class="role-btn" onclick="selectRole(this)">Driver</button>
-      <button class="role-btn" onclick="selectRole(this)">Admin</button>
+    <!-- ✅ Role selection buttons with animated sliding glider -->
+    <div class="role-selection" id="roleSelection">
+      <div class="role-slider" id="roleSlider"></div>
+      <button type="button" class="role-btn active" onclick="selectRole(this, 0)">Passenger</button>
+      <button type="button" class="role-btn" onclick="selectRole(this, 1)">Driver</button>
+      <button type="button" class="role-btn" onclick="selectRole(this, 2)">Admin</button>
     </div>
+
+    <!-- Inline feedback alert -->
+    <div id="login-alert" class="login-alert" style="display: none;"></div>
 
     <!-- ✅ Login form -->
     <form id="login-form">
-      <input type="email" placeholder="your@email.com" required />
-      <input type="password" placeholder="Password" required />
+      <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email" />
+      <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
       <div class="forgot-password">
-        <a href="#">Forgot password?</a>
+        <a href="javascript:void(0)" onclick="openForgotPasswordModal()">Forgot password?</a>
       </div>
-      <button type="submit" class="submit-btn">Login</button>
+      <button type="submit" id="login-submit-btn" class="submit-btn">Login</button>
     </form>
 
     <!-- ✅ Link to signup.html for users without an account -->
@@ -55,12 +53,625 @@
   </div>
 </div>
 
+<!-- ✅ Bottom-right utility links -->
+<footer class="bottom-links">
+  <button type="button" class="footer-link-btn" onclick="openModal('servicesModal')">Services</button>
+  <button type="button" class="footer-link-btn" onclick="openModal('aboutModal')">About Us</button>
+  <button type="button" class="footer-link-btn" onclick="openModal('contactModal')">Contact</button>
+</footer>
+
+<!-- ✅ Interactive Modals Container -->
+<div id="modalOverlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  
+  <!-- 🚏 Services Modal -->
+  <div id="servicesModal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="servicesTitle">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span class="modal-badge-icon">🚏</span>
+        <div>
+          <h3 id="servicesTitle">Our Transit Services</h3>
+          <p>Smart mobility solutions for Dehradun commuters & drivers</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-card-header">
+            <span class="service-icon">🧭</span>
+            <h4>Intelligent Route Finding</h4>
+          </div>
+          <p>Benchmarked graph algorithms (Floyd-Warshall & A*) compute the shortest and most cost-effective paths across major transit hubs in Dehradun.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card-header">
+            <span class="service-icon">🏷️</span>
+            <h4>Transparent Fare Estimation</h4>
+          </div>
+          <p>Dynamic zone multipliers calculate standardized fares before boarding, ensuring fair pricing between Clock Tower, ISBT, Prem Nagar, and Rajpur Road.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card-header">
+            <span class="service-icon">🚍</span>
+            <h4>Driver & Fleet Operations</h4>
+          </div>
+          <p>Real-time online/offline status, vehicle health tracking, scheduled pickup monitoring, and route management for local tempo operators.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card-header">
+            <span class="service-icon">🗺️</span>
+            <h4>Live Google Maps Sync</h4>
+          </div>
+          <p>Export calculated multi-stop journeys directly into Google Maps for turn-by-turn navigation and live traffic updates.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🏔️ About Us Modal -->
+  <div id="aboutModal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span class="modal-badge-icon">🏔️</span>
+        <div>
+          <h3 id="aboutTitle">About Tempo Navigator</h3>
+          <p>Empowering everyday transit across the Doon Valley</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="about-hero-box">
+        <p>The <strong>Dehradun Tempo Management System</strong> is a dedicated public transit initiative engineered to modernize and optimize shared tempo travel in Dehradun, Uttarakhand.</p>
+      </div>
+
+      <div class="about-highlights">
+        <div class="highlight-item">
+          <div class="highlight-icon">⚡</div>
+          <div class="highlight-text">
+            <strong>70%+ Faster Commute Planning</strong>
+            <p>Sub-second algorithmic route calculation removes the confusion of manual route inquiries.</p>
+          </div>
+        </div>
+
+        <div class="highlight-item">
+          <div class="highlight-icon">🤝</div>
+          <div class="highlight-text">
+            <strong>Built for the Community</strong>
+            <p>Designed for daily office commuters, university students, tourists, and hardworking local drivers.</p>
+          </div>
+        </div>
+
+        <div class="highlight-item">
+          <div class="highlight-icon">🌿</div>
+          <div class="highlight-text">
+            <strong>Greener & Cleaner Transit</strong>
+            <p>Promoting optimized shared rides to alleviate traffic bottlenecks along Paltan Bazaar, ISBT, and Rajpur Road.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-footer-info">
+        <span>📍 Dehradun, Uttarakhand, India</span>
+        <span>•</span>
+        <span>Platform v1.0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📬 Contact Modal -->
+  <div id="contactModal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span class="modal-badge-icon">📬</span>
+        <div>
+          <h3 id="contactTitle">Get In Touch</h3>
+          <p>Send a message directly to our team</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="contact-channels-grid">
+        <div class="contact-channel-card">
+          <span class="channel-emoji">✉️</span>
+          <div class="channel-info">
+            <span class="channel-label">Official Support Email</span>
+            <a href="mailto:support@temponavigator.in?subject=Inquiry%20-%20Tempo%20Navigator" class="channel-link">support@temponavigator.in</a>
+            <span class="channel-sub">Click to write directly via email</span>
+          </div>
+        </div>
+
+        <div class="contact-channel-card">
+          <span class="channel-emoji">📞</span>
+          <div class="channel-info">
+            <span class="channel-label">Helpline Desk</span>
+            <span class="channel-val">+91 (0135) 271-TEMPO</span>
+            <span class="channel-sub">Mon - Sat: 8:00 AM - 8:00 PM</span>
+          </div>
+        </div>
+
+        <div class="contact-channel-card">
+          <span class="channel-emoji">🏢</span>
+          <div class="channel-info">
+            <span class="channel-label">Transit Hub Office</span>
+            <span class="channel-val">ISBT Hub & Clock Tower Plaza</span>
+            <span class="channel-sub">Dehradun, Uttarakhand</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-contact-container">
+        <h4>✉️ Send a Message to this Mail</h4>
+        <form id="quickContactForm" onsubmit="handleContactSubmit(event)">
+          <div class="form-inputs-row">
+            <input type="text" id="contactSenderName" placeholder="Your Name" required />
+            <input type="email" id="contactSenderEmail" placeholder="Your Email Address" required />
+          </div>
+          <input type="text" id="contactSubject" placeholder="Subject (e.g., Route Inquiry, Driver Account, Feedback)" required />
+          <textarea id="contactMessageText" rows="3" placeholder="Write your message to the team..." required></textarea>
+          <div class="form-actions-row">
+            <button type="submit" class="send-message-btn">Send Message 🚀</button>
+            <a href="mailto:support@temponavigator.in?subject=Inquiry%20-%20Tempo%20Navigator" class="direct-mail-btn">Open in Email Client ↗</a>
+          </div>
+        </form>
+        <div id="contactFeedback" class="contact-feedback" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔑 Forgot Password Modal -->
+  <div id="forgotPasswordModal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span class="modal-badge-icon">🔐</span>
+        <div>
+          <h3 id="forgotTitle">Reset Your Password</h3>
+          <p>Verify your identity via email OTP</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAllModals()" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      
+      <!-- Progress Steps Indicator -->
+      <div class="reset-steps-bar">
+        <div class="reset-step active" id="stepIndicator1">
+          <span class="step-num">1</span>
+          <span class="step-lbl">Email</span>
+        </div>
+        <div class="step-line" id="stepLine1"></div>
+        <div class="reset-step" id="stepIndicator2">
+          <span class="step-num">2</span>
+          <span class="step-lbl">Verify OTP</span>
+        </div>
+        <div class="step-line" id="stepLine2"></div>
+        <div class="reset-step" id="stepIndicator3">
+          <span class="step-num">3</span>
+          <span class="step-lbl">New Password</span>
+        </div>
+      </div>
+
+      <!-- Alert feedback within modal -->
+      <div id="resetModalAlert" class="reset-alert" style="display: none;"></div>
+
+      <!-- Step 1: Request Email Form -->
+      <form id="forgotStep1Form" onsubmit="handleSendOtp(event)">
+        <p class="reset-instruction">Enter your registered email address to receive a 6-digit verification code.</p>
+        <div class="input-with-icon">
+          <span class="field-icon">✉️</span>
+          <input type="email" id="resetEmailInput" placeholder="Enter your registered email" required autocomplete="email" />
+        </div>
+        <button type="submit" id="sendOtpBtn" class="submit-btn reset-action-btn">Send Verification OTP 📨</button>
+      </form>
+
+      <!-- Step 2: Enter OTP Form -->
+      <form id="forgotStep2Form" style="display: none;" onsubmit="handleVerifyOtp(event)">
+        <p class="reset-instruction">We have generated a 6-digit verification code for <strong id="otpTargetEmail"></strong>.</p>
+        
+        <div id="demoOtpBox" class="demo-otp-banner" style="display: none;">
+          <span>🔑 <strong>Demo Code:</strong> <code id="demoOtpCode">------</code></span>
+          <button type="button" class="copy-otp-btn" onclick="copyDemoOtp()">Paste Code</button>
+        </div>
+
+        <div class="otp-input-group">
+          <input type="text" id="otpCodeInput" maxlength="6" placeholder="• • • • • •" required autocomplete="one-time-code" />
+        </div>
+
+        <button type="submit" id="verifyOtpBtn" class="submit-btn reset-action-btn">Verify Code ✓</button>
+        <div class="reset-step-links">
+          <a href="javascript:void(0)" onclick="resendOtp()">Resend code</a>
+          <span>&bull;</span>
+          <a href="javascript:void(0)" onclick="goToResetStep(1)">Change email</a>
+        </div>
+      </form>
+
+      <!-- Step 3: Set New Password Form -->
+      <form id="forgotStep3Form" style="display: none;" onsubmit="handleResetPassword(event)">
+        <p class="reset-instruction">Create a strong new password for your account.</p>
+        
+        <div class="input-with-icon">
+          <span class="field-icon">🔒</span>
+          <input type="password" id="newPasswordInput" placeholder="New Password (min 4 characters)" required minlength="4" />
+        </div>
+
+        <div class="input-with-icon">
+          <span class="field-icon">🔒</span>
+          <input type="password" id="confirmNewPasswordInput" placeholder="Confirm New Password" required minlength="4" />
+        </div>
+
+        <button type="submit" id="savePasswordBtn" class="submit-btn reset-action-btn">Save New Password 💾</button>
+      </form>
+
+      <!-- Step 4: Success View -->
+      <div id="forgotStep4Success" style="display: none;" class="reset-success-box">
+        <div class="success-icon">🎉</div>
+        <h4>Password Successfully Updated!</h4>
+        <p>Your new password has been verified and saved directly into <strong>users.xlsx</strong>.</p>
+        <button type="button" class="submit-btn reset-action-btn" onclick="finishPasswordReset()">Back to Login</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
 <!-- ✅ Script for role button toggle -->
 <script>
-  function selectRole(button) {
+  function selectRole(button, index) {
     const buttons = document.querySelectorAll('.role-btn');
+    const idx = index !== undefined ? index : Array.from(buttons).indexOf(button);
     buttons.forEach((btn) => btn.classList.remove('active'));
     button.classList.add('active');
+
+    // Slide the animated glider pill
+    const slider = document.getElementById('roleSlider');
+    if (slider) {
+      slider.style.transform = `translateX(${idx * 100}%)`;
+    }
+
+    const alertBox = document.getElementById('login-alert');
+    if (alertBox) alertBox.style.display = 'none';
+
+    const roleName = button.innerText.trim();
+
+    // Animated role subtitle tag
+    const tag = document.querySelector('.role-tag');
+    if (tag) {
+      tag.classList.remove('fade-anim');
+      void tag.offsetWidth; // trigger reflow
+      tag.classList.add('fade-anim');
+      if (roleName === 'Passenger') {
+        tag.textContent = 'Passenger 🎒';
+      } else if (roleName === 'Driver') {
+        tag.textContent = 'Tempo Driver 🚕';
+      } else if (roleName === 'Admin') {
+        tag.textContent = 'Administrator 🛡️';
+      }
+    }
+
+    // Dynamic submit button text and placeholder with micro-animation
+    const submitBtn = document.getElementById('login-submit-btn');
+    const emailInput = document.getElementById('login-email');
+    const form = document.getElementById('login-form');
+
+    if (form) {
+      form.classList.remove('form-anim');
+      void form.offsetWidth;
+      form.classList.add('form-anim');
+    }
+
+    if (submitBtn) {
+      submitBtn.innerText = `Login as ${roleName} →`;
+    }
+
+    if (emailInput) {
+      if (roleName === 'Passenger') {
+        emailInput.placeholder = 'passenger@email.com';
+      } else if (roleName === 'Driver') {
+        emailInput.placeholder = 'driver@email.com';
+      } else if (roleName === 'Admin') {
+        emailInput.placeholder = 'admin@email.com';
+      }
+    }
+  }
+
+  // ✅ Interactive Modals Logic
+  function openModal(modalId) {
+    const overlay = document.getElementById('modalOverlay');
+    const modals = document.querySelectorAll('.info-modal');
+    modals.forEach((m) => (m.style.display = 'none'));
+
+    const targetModal = document.getElementById(modalId);
+    if (targetModal) {
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.classList.add('active');
+        targetModal.style.display = 'block';
+      }, 10);
+    }
+  }
+
+  function closeAllModals() {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.remove('active');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      document.querySelectorAll('.info-modal').forEach((m) => (m.style.display = 'none'));
+    }, 200);
+  }
+
+  function handleOverlayClick(event) {
+    if (event.target === document.getElementById('modalOverlay')) {
+      closeAllModals();
+    }
+  }
+
+  // Close with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllModals();
+    }
+  });
+
+  // Handle Quick Contact Form Submission
+  function handleContactSubmit(event) {
+    event.preventDefault();
+    const name = document.getElementById('contactSenderName').value.trim();
+    const email = document.getElementById('contactSenderEmail').value.trim();
+    const subject = document.getElementById('contactSubject').value.trim();
+    const message = document.getElementById('contactMessageText').value.trim();
+
+    const form = document.getElementById('quickContactForm');
+    const feedback = document.getElementById('contactFeedback');
+
+    form.reset();
+    form.style.display = 'none';
+    feedback.style.display = 'block';
+    feedback.innerHTML = `
+      <div class="feedback-success">
+        <h5>✅ Message Dispatched Successfully!</h5>
+        <p>Thank you, <strong>${name}</strong>. Your inquiry regarding <em>"${subject}"</em> has been transmitted to <strong>support@temponavigator.in</strong>.</p>
+        <p class="feedback-note">A response will be sent to <strong>${email}</strong> within 2-4 business hours.</p>
+        <button type="button" class="feedback-reset-btn" onclick="resetContactForm()">Send Another Message</button>
+      </div>
+    `;
+  }
+
+  function resetContactForm() {
+    const form = document.getElementById('quickContactForm');
+    const feedback = document.getElementById('contactFeedback');
+    feedback.style.display = 'none';
+    form.style.display = 'block';
+  }
+
+  // ==========================================
+  // 🔐 FORGOT PASSWORD STEP-BY-STEP OTP FLOW
+  // ==========================================
+  let currentResetEmail = '';
+  let cachedDemoOtp = '';
+
+  function openForgotPasswordModal() {
+    goToResetStep(1);
+    const alertBox = document.getElementById('resetModalAlert');
+    if (alertBox) alertBox.style.display = 'none';
+    const emailField = document.getElementById('resetEmailInput');
+    const loginEmail = document.getElementById('login-email').value.trim();
+    if (emailField && loginEmail) {
+      emailField.value = loginEmail;
+    }
+    openModal('forgotPasswordModal');
+  }
+
+  function goToResetStep(step) {
+    document.getElementById('forgotStep1Form').style.display = step === 1 ? 'block' : 'none';
+    document.getElementById('forgotStep2Form').style.display = step === 2 ? 'block' : 'none';
+    document.getElementById('forgotStep3Form').style.display = step === 3 ? 'block' : 'none';
+    document.getElementById('forgotStep4Success').style.display = step === 4 ? 'block' : 'none';
+
+    // Step indicators
+    document.getElementById('stepIndicator1').className = 'reset-step' + (step >= 1 ? ' active' : '');
+    document.getElementById('stepLine1').className = 'step-line' + (step >= 2 ? ' active' : '');
+    document.getElementById('stepIndicator2').className = 'reset-step' + (step >= 2 ? ' active' : '');
+    document.getElementById('stepLine2').className = 'step-line' + (step >= 3 ? ' active' : '');
+    document.getElementById('stepIndicator3').className = 'reset-step' + (step >= 3 ? ' active' : '');
+
+    const alertBox = document.getElementById('resetModalAlert');
+    if (alertBox) alertBox.style.display = 'none';
+  }
+
+  function showResetAlert(message, isError = true) {
+    const alertBox = document.getElementById('resetModalAlert');
+    if (!alertBox) return;
+    alertBox.className = 'reset-alert ' + (isError ? 'reset-alert-error' : 'reset-alert-success');
+    alertBox.innerHTML = (isError ? '⚠️ ' : '✅ ') + message;
+    alertBox.style.display = 'block';
+  }
+
+  // Step 1: Send OTP to email
+  async function handleSendOtp(event) {
+    event.preventDefault();
+    const email = document.getElementById('resetEmailInput').value.trim();
+    const btn = document.getElementById('sendOtpBtn');
+
+    btn.disabled = true;
+    btn.innerText = 'Checking database & sending OTP...';
+
+    try {
+      const res = await fetch('/api/forgot-password/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showResetAlert(data.message || 'Could not send verification OTP', true);
+        btn.disabled = false;
+        btn.innerText = 'Send Verification OTP 📨';
+        return;
+      }
+
+      currentResetEmail = data.email || email;
+      cachedDemoOtp = data.demoOtp || '';
+
+      document.getElementById('otpTargetEmail').textContent = currentResetEmail;
+      
+      const demoBox = document.getElementById('demoOtpBox');
+      const demoCodeSpan = document.getElementById('demoOtpCode');
+      if (data.demoOtp) {
+        demoCodeSpan.textContent = data.demoOtp;
+        demoBox.style.display = 'flex';
+      }
+
+      goToResetStep(2);
+      showResetAlert('OTP code generated! Check your email or use the verification code shown.', false);
+      const otpInput = document.getElementById('otpCodeInput');
+      if (otpInput) {
+        otpInput.value = '';
+        setTimeout(() => otpInput.focus(), 150);
+      }
+    } catch (err) {
+      showResetAlert('Network error connecting to backend.', true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Send Verification OTP 📨';
+    }
+  }
+
+  function copyDemoOtp() {
+    if (cachedDemoOtp) {
+      document.getElementById('otpCodeInput').value = cachedDemoOtp;
+      showResetAlert('Verification code pasted into input field!', false);
+    }
+  }
+
+  async function resendOtp() {
+    if (!currentResetEmail) return;
+    try {
+      const res = await fetch('/api/forgot-password/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentResetEmail })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        cachedDemoOtp = data.demoOtp || '';
+        document.getElementById('demoOtpCode').textContent = cachedDemoOtp;
+        showResetAlert('A fresh 6-digit OTP code has been generated.', false);
+      }
+    } catch (err) {
+      showResetAlert('Could not resend OTP.', true);
+    }
+  }
+
+  // Step 2: Verify OTP
+  async function handleVerifyOtp(event) {
+    event.preventDefault();
+    const otp = document.getElementById('otpCodeInput').value.trim();
+    const btn = document.getElementById('verifyOtpBtn');
+
+    btn.disabled = true;
+    btn.innerText = 'Verifying code...';
+
+    try {
+      const res = await fetch('/api/forgot-password/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentResetEmail, otp })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showResetAlert(data.message || 'Invalid or expired OTP', true);
+        btn.disabled = false;
+        btn.innerText = 'Verify Code ✓';
+        return;
+      }
+
+      goToResetStep(3);
+      showResetAlert('Code verified! Please create your new password.', false);
+      const pwdInput = document.getElementById('newPasswordInput');
+      if (pwdInput) {
+        setTimeout(() => pwdInput.focus(), 150);
+      }
+    } catch (err) {
+      showResetAlert('Failed to verify OTP with server.', true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Verify Code ✓';
+    }
+  }
+
+  // Step 3: Reset Password
+  async function handleResetPassword(event) {
+    event.preventDefault();
+    const newPassword = document.getElementById('newPasswordInput').value;
+    const confirmPassword = document.getElementById('confirmNewPasswordInput').value;
+    const btn = document.getElementById('savePasswordBtn');
+
+    if (newPassword !== confirmPassword) {
+      showResetAlert('Passwords do not match! Please check both fields.', true);
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      showResetAlert('Password must be at least 4 characters long.', true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Updating password in users.xlsx...';
+
+    try {
+      const res = await fetch('/api/forgot-password/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentResetEmail,
+          newPassword,
+          confirmPassword
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showResetAlert(data.message || 'Could not update password', true);
+        btn.disabled = false;
+        btn.innerText = 'Save New Password 💾';
+        return;
+      }
+
+      // Pre-fill login email with the updated account
+      const loginEmail = document.getElementById('login-email');
+      if (loginEmail) loginEmail.value = currentResetEmail;
+      const loginPassword = document.getElementById('login-password');
+      if (loginPassword) loginPassword.value = '';
+
+      goToResetStep(4);
+    } catch (err) {
+      showResetAlert('Server error updating password.', true);
+      btn.disabled = false;
+      btn.innerText = 'Save New Password 💾';
+    }
+  }
+
+  function finishPasswordReset() {
+    closeAllModals();
+    const alertBox = document.getElementById('login-alert');
+    if (alertBox) {
+      alertBox.className = 'login-alert login-alert-success';
+      alertBox.innerText = '✅ Password updated in users.xlsx! Please enter your new password to log in.';
+      alertBox.style.display = 'block';
+    }
+    const loginPassword = document.getElementById('login-password');
+    if (loginPassword) {
+      loginPassword.focus();
+    }
   }
 </script>
 
@@ -70,20 +681,59 @@
     event.preventDefault(); // Prevent page refresh on submit
 
     // ✅ Collect input values
-    const email = document.querySelector('input[type="email"]').value.trim();
-    const password = document.querySelector('input[type="password"]').value;
-    const role = document.querySelector('.role-btn.active').innerText; // Selected role
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const role = document.querySelector('.role-btn.active').innerText.trim();
+    const alertBox = document.getElementById('login-alert');
+    const submitBtn = document.getElementById('login-submit-btn');
 
-    // ✅ Mock backend response for showcase
-    alert('Login successful');
+    alertBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Verifying credentials...';
 
-    // ✅ Redirect based on role if login is successful
-    if (role === 'Passenger') {
-      window.location.href = 'path.html'; // Passenger home page
-    } else if (role === 'Driver') {
-      window.location.href = 'driver-home.html'; // Driver home page
-    } else if (role === 'Admin') {
-      window.location.href = 'admin-dashboard.html'; // Admin dashboard
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alertBox.className = 'login-alert login-alert-error';
+        alertBox.innerText = `⚠️ ${data.message || 'Invalid credentials'}`;
+        alertBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Login';
+        return;
+      }
+
+      // Success
+      alertBox.className = 'login-alert login-alert-success';
+      alertBox.innerText = `✅ Login verified! Welcome, ${data.user?.name || role}. Redirecting...`;
+      alertBox.style.display = 'block';
+
+      // Store authenticated user profile in session
+      sessionStorage.setItem('currentUser', JSON.stringify(data.user));
+
+      setTimeout(() => {
+        if (role === 'Passenger') {
+          window.location.href = 'path.html';
+        } else if (role === 'Driver') {
+          window.location.href = 'driver-home.html';
+        } else if (role === 'Admin') {
+          window.location.href = 'admin-dashboard.html';
+        }
+      }, 600);
+
+    } catch (err) {
+      console.error('Login error:', err);
+      alertBox.className = 'login-alert login-alert-error';
+      alertBox.innerText = '❌ Database connection failed. Please ensure the backend server is running.';
+      alertBox.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Login';
     }
   });
 </script>
