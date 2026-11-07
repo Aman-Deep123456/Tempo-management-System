@@ -86,5 +86,16 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Load logged-in user from database session
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    if (currentUser && currentUser.name) {
+      document.getElementById('displayName').textContent = currentUser.name;
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      if (nameInput) nameInput.value = currentUser.name;
+      if (emailInput && currentUser.email) emailInput.value = currentUser.email;
+    }
+  </script>
 </body>
 </html>
