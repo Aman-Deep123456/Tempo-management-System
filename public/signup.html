@@ -61,23 +61,55 @@
       margin-bottom: 20px;
     }
     .role-selection {
-      margin-bottom: 20px;
+      position: relative;
+      display: flex;
+      background: #edf2f7;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 22px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .role-slider {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: calc((100% - 8px) / 2);
+      background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(22, 101, 52, 0.35);
+      transition: transform 0.35s cubic-bezier(0.34, 1.25, 0.64, 1);
+      z-index: 1;
+      pointer-events: none;
     }
     .role-btn {
-      border: 1px solid #ddd;
-      background: white;
-      color: #333;
-      padding: 8px 20px;
-      margin: 0 5px;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 15px;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 8px;
+      font-size: 14px;
       font-weight: 600;
-      transition: background 0.3s, color 0.3s;
+      color: #64748b;
+      transition: color 0.25s ease, transform 0.15s ease;
+      text-align: center;
+      user-select: none;
     }
-    .role-btn.active, .role-btn:hover {
-      background: #17612a;
-      color: white;
-      border-color: #17612a;
+    .role-btn:hover:not(.active) {
+      color: #1e293b;
+    }
+    .role-btn:active {
+      transform: scale(0.96);
+    }
+    .role-btn.active {
+      color: #ffffff !important;
+      background: transparent !important;
+      border: none !important;
     }
     input[type="text"],
     input[type='email'],
@@ -132,10 +164,10 @@
     <h2>Create your account</h2>
     <p>Sign up to start your journey</p>
 
-    <div class="role-selection">
-      <button type="button" class="role-btn active" onclick="selectRole(this)">Passenger</button>
-      <button type="button" class="role-btn" onclick="selectRole(this)">Driver</button>
-      <button type="button" class="role-btn" onclick="selectRole(this)">Admin</button>
+    <div class="role-selection" id="roleSelection">
+      <div class="role-slider" id="roleSlider"></div>
+      <button type="button" class="role-btn active" onclick="selectRole(this, 0)">Passenger</button>
+      <button type="button" class="role-btn" onclick="selectRole(this, 1)">Driver</button>
     </div>
 
     <form id="signup-form">
@@ -187,9 +219,16 @@
     // Fallback just in case animation fails to load or takes too long
     setTimeout(showMainContent, 4000);
 
-    function selectRole(button) {
-      document.querySelectorAll(".role-btn").forEach(btn => btn.classList.remove("active"));
+    function selectRole(button, index) {
+      const buttons = document.querySelectorAll(".role-btn");
+      const idx = index !== undefined ? index : Array.from(buttons).indexOf(button);
+      buttons.forEach(btn => btn.classList.remove("active"));
       button.classList.add("active");
+
+      const slider = document.getElementById("roleSlider");
+      if (slider) {
+        slider.style.transform = `translateX(${idx * 100}%)`;
+      }
     }
 
     document.getElementById("signup-form").addEventListener("submit", async (e) => {
@@ -208,7 +247,7 @@
       }
 
       try {
-        const response = await fetch('http://localhost:3000/api/signup', {
+        const response = await fetch('/api/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, role }),
