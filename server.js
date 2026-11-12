@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 });
 // Signup API
 app.post('/api/signup', (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, sex, aadhar, vehicleType, vehicleNo } = req.body;
     if (role === 'Admin') {
         return res.status(403).json({ message: 'Admin accounts cannot be self-registered. Credentials must be provided by the team.' });
     }
@@ -26,10 +26,23 @@ app.post('/api/signup', (req, res) => {
         return res.status(400).json({ message: 'Invalid role. Only Passenger and Driver accounts can be registered.' });
     }
     try {
-        const user = addUser({ name, email, password, role });
-        res.status(201).json({ message: 'Signup successful', user });
+        const user = addUser({ name, email, password, role, sex, aadhar, vehicleType, vehicleNo });
+        res.status(201).json({
+            message: role === 'Driver'
+                ? 'Driver account and vehicle details registered successfully!'
+                : 'Signup successful',
+            user: {
+                name: user.Name,
+                email: user.Email,
+                role: user.Role,
+                sex: user.Sex || '',
+                vehicleType: user.VehicleType || '',
+                vehicleNo: user.VehicleNo || ''
+            }
+        });
     } catch (err) {
-        res.status(409).json({ message: err.message });
+        const statusCode = err.statusCode || 400;
+        res.status(statusCode).json({ message: err.message });
     }
 });
 
@@ -48,7 +61,17 @@ app.post('/api/login', (req, res) => {
         }
         return res.status(401).json({ message: 'Invalid email or password' });
     }
-    res.json({ message: 'Login successful', user: { name: user.Name, email: user.Email, role: user.Role } });
+    res.json({
+        message: 'Login successful',
+        user: {
+            name: user.Name,
+            email: user.Email,
+            role: user.Role,
+            sex: user.Sex || '',
+            vehicleType: user.VehicleType || '',
+            vehicleNo: user.VehicleNo || ''
+        }
+    });
 });
 
 // 🔑 Forgot Password Step 1: Send OTP to registered email
@@ -141,6 +164,20 @@ app.post('/api/forgot-password/reset-password', (req, res) => {
 // Get users list (without passwords)
 app.get('/api/users', (req, res) => {
     res.json(getAllUsers());
+});
+
+// Get registered drivers list from users.xlsx (without passwords or sensitive IDs)
+app.get('/api/drivers', (req, res) => {
+    const drivers = getAllUsers()
+        .filter(u => u.role && u.role.toLowerCase() === 'driver')
+        .map(d => ({
+            id: d.id,
+            name: d.name,
+            sex: d.sex || 'Not specified',
+            vehicleType: d.vehicleType || 'Four Seater',
+            vehicleNo: d.vehicleNo || `UK-07-TA-${1000 + d.id * 137}`
+        }));
+    res.json(drivers);
 });
 
 // Add route API
