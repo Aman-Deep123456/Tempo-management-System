@@ -6,15 +6,20 @@
   <title>Tempo Navigator - Sign Up</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fc;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f5fa 0%, #e6eef7 100%);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
-      overflow: hidden; /* Prevent scroll on splash */
+      padding: 24px 16px;
+      overflow: hidden; /* Prevent scroll during splash */
     }
 
     /* Splash Screen Styles */
@@ -38,35 +43,64 @@
       max-height: 500px;
     }
 
-    /* Hidden initially */
+    /* Signup Card */
     .signup-box {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 350px;
+      background: #ffffff;
+      padding: 30px 36px;
+      border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+      width: 100%;
+      max-width: 390px;
       text-align: center;
-      display: none; 
+      display: none;
       opacity: 0;
-      transition: opacity 0.5s ease-in;
+      transition: opacity 0.5s ease-in, max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    .signup-box.driver-mode {
+      max-width: 490px;
+    }
+
     h2 {
-      margin-bottom: 5px;
+      margin: 0 0 6px 0;
       color: #1f3d56;
+      font-size: 24px;
     }
-    p {
+
+    .subtitle {
       margin-top: 0;
-      color: #6b7a99;
+      color: #64748b;
       font-size: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
+
+    .role-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 600;
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    .role-tag.fade-anim {
+      animation: rolePop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes rolePop {
+      0% { opacity: 0; transform: translateY(-4px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .role-selection {
       position: relative;
       display: flex;
       background: #edf2f7;
       border-radius: 12px;
       padding: 4px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
       border: 1px solid #e2e8f0;
       overflow: hidden;
@@ -111,37 +145,161 @@
       background: transparent !important;
       border: none !important;
     }
-    input[type="text"],
-    input[type='email'],
-    input[type="password"] {
-      width: 100%;
-      padding: 12px 15px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-      box-sizing: border-box;
+
+    /* Form Controls */
+    #signup-form {
+      text-align: left;
     }
+
+    .form-anim {
+      animation: formSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes formSlideIn {
+      0% { opacity: 0.6; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    .field-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 500px) {
+      .field-row-2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+    }
+
+    .field-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14.5px;
+      color: #1e293b;
+      background-color: #ffffff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #166534;
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.14);
+    }
+
+    .uppercase-input {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Animated Driver-Only Sections */
+    .driver-only-section {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(-6px);
+      transition: max-height 0.4s ease, opacity 0.3s ease, transform 0.3s ease, margin 0.3s ease;
+      pointer-events: none;
+    }
+
+    .driver-only-section.open {
+      max-height: 460px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .driver-section-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .helper-hint {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Alert Box */
+    .signup-alert {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .signup-alert-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    .signup-alert-success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
     .submit-btn {
       width: 100%;
       padding: 12px;
       background-color: #17612a;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       color: white;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 15.5px;
       cursor: pointer;
-      margin-top: 15px;
-      transition: background-color 0.3s ease;
+      margin-top: 8px;
+      transition: background-color 0.25s ease, transform 0.15s ease;
     }
-    .submit-btn:hover {
+    .submit-btn:hover:not(:disabled) {
       background-color: #124d1d;
     }
+    .submit-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
     .login-text {
-      margin-top: 20px;
+      margin-top: 18px;
+      margin-bottom: 0;
       font-size: 14px;
       color: #555;
+      text-align: center;
     }
     .login-text a {
       color: #17612a;
@@ -162,7 +320,7 @@
 
   <div class="signup-box" id="main-content">
     <h2>Create your account</h2>
-    <p>Sign up to start your journey</p>
+    <p class="subtitle">Sign up as <span class="role-tag" id="roleTag">Passenger 🎒</span></p>
 
     <div class="role-selection" id="roleSelection">
       <div class="role-slider" id="roleSlider"></div>
@@ -170,12 +328,100 @@
       <button type="button" class="role-btn" onclick="selectRole(this, 1)">Driver</button>
     </div>
 
+    <div id="signup-alert" class="signup-alert"></div>
+
     <form id="signup-form">
-      <input type="text" placeholder="Full Name" required />
-      <input type="email" placeholder="Email Address" required />
-      <input type="password" placeholder="Create Password" required />
-      <input type="password" placeholder="Confirm Password" required />
-      <button type="submit" class="submit-btn">Sign Up</button>
+      <!-- Driver Section Header (Animated) -->
+      <div class="driver-only-section" id="driverHeaderSection">
+        <div class="driver-section-banner">
+          <span>🚕</span>
+          <span>Driver Verification &amp; Vehicle Registration Form</span>
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div class="field-group">
+        <label class="field-label" for="signup-name">Full Name</label>
+        <input type="text" id="signup-name" placeholder="Enter your full name" required />
+      </div>
+
+      <!-- Sex (Driver Only) -->
+      <div class="driver-only-section" id="driverSexSection">
+        <div class="field-group">
+          <label class="field-label" for="driver-sex">Sex</label>
+          <select id="driver-sex" class="driver-required" disabled>
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label" for="signup-email">Email Address</label>
+        <input type="email" id="signup-email" placeholder="your@email.com" required />
+      </div>
+
+      <!-- Driver Aadhar, Vehicle Type & Vehicle No -->
+      <div class="driver-only-section" id="driverVehicleSection">
+        <div class="field-group">
+          <label class="field-label" for="driver-aadhar">Aadhar Number</label>
+          <input
+            type="text"
+            id="driver-aadhar"
+            class="driver-required"
+            placeholder="12-digit Aadhar Number (e.g. 1234 5678 9012)"
+            maxlength="14"
+            inputmode="numeric"
+            disabled
+          />
+          <div class="helper-hint">Enter your 12-digit government Aadhar number</div>
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label" for="driver-vehicle-type">Vehicle Type</label>
+            <select id="driver-vehicle-type" class="driver-required" disabled>
+              <option value="">Select Vehicle Type</option>
+              <option value="Three Seater">Three Seater (Auto / E-Rickshaw)</option>
+              <option value="Four Seater">Four Seater (Standard Tempo / Cab)</option>
+              <option value="Six Seater">Six Seater (Vikram / Magic Tempo)</option>
+              <option value="Eight Seater">Eight Seater (Large Tempo)</option>
+              <option value="Ten Seater">Ten Seater (Tempo Traveller)</option>
+              <option value="Twelve+ Seater">Twelve+ Seater (Mini Bus)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="driver-vehicle-no">Vehicle No</label>
+            <input
+              type="text"
+              id="driver-vehicle-no"
+              class="driver-required uppercase-input"
+              placeholder="e.g. UK-07-TA-1234"
+              maxlength="20"
+              disabled
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Password & Confirm Password -->
+      <div class="field-row-2">
+        <div class="field-group">
+          <label class="field-label" for="signup-password">Create Password</label>
+          <input type="password" id="signup-password" placeholder="Min 4 chars" minlength="4" required />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="signup-confirm-password">Confirm Password</label>
+          <input type="password" id="signup-confirm-password" placeholder="Confirm password" minlength="4" required />
+        </div>
+      </div>
+
+      <button type="submit" id="signup-submit-btn" class="submit-btn">Sign Up as Passenger →</button>
     </form>
 
     <p class="login-text">
@@ -191,33 +437,49 @@
       renderer: "svg",
       loop: false,
       autoplay: true,
-      path: "Animation.json" // using the provided json file
+      path: "Animation.json"
     });
 
-    // When animation completes or after a timeout, show the signup form
     const showMainContent = () => {
       const splash = document.getElementById("splash-screen");
       const main = document.getElementById("main-content");
-      
-      // Fade out splash
+      if (!splash || splash.style.display === "none") return;
+
       splash.style.opacity = "0";
       setTimeout(() => {
         splash.style.display = "none";
         document.body.style.overflow = "auto";
-        
-        // Fade in main
+
         main.style.display = "block";
         setTimeout(() => {
           main.style.opacity = "1";
         }, 50);
-      }, 500); // Wait for transition
+      }, 500);
     };
 
-    // Trigger transition when animation finishes
     animation.addEventListener("complete", showMainContent);
-
-    // Fallback just in case animation fails to load or takes too long
     setTimeout(showMainContent, 4000);
+
+    // Format Aadhar nicely as user types (XXXX XXXX XXXX)
+    document.getElementById("driver-aadhar").addEventListener("input", function (e) {
+      const digits = e.target.value.replace(/\D/g, "").slice(0, 12);
+      e.target.value = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+    });
+
+    function showSignupAlert(message, isError = true) {
+      const alertBox = document.getElementById("signup-alert");
+      if (!alertBox) return;
+      alertBox.className = isError
+        ? "signup-alert signup-alert-error"
+        : "signup-alert signup-alert-success";
+      alertBox.innerText = isError ? `⚠️ ${message}` : `✅ ${message}`;
+      alertBox.style.display = "block";
+    }
+
+    function hideSignupAlert() {
+      const alertBox = document.getElementById("signup-alert");
+      if (alertBox) alertBox.style.display = "none";
+    }
 
     function selectRole(button, index) {
       const buttons = document.querySelectorAll(".role-btn");
@@ -229,39 +491,122 @@
       if (slider) {
         slider.style.transform = `translateX(${idx * 100}%)`;
       }
+
+      hideSignupAlert();
+
+      const roleName = button.innerText.trim();
+      const isDriver = roleName === "Driver";
+
+      // Expand/contract card smoothly and open driver form sections
+      const card = document.getElementById("main-content");
+      card.classList.toggle("driver-mode", isDriver);
+
+      const driverSections = document.querySelectorAll(".driver-only-section");
+      driverSections.forEach(sec => sec.classList.toggle("open", isDriver));
+
+      const driverRequiredInputs = document.querySelectorAll(".driver-required");
+      driverRequiredInputs.forEach(el => {
+        el.disabled = !isDriver;
+        el.required = isDriver;
+      });
+
+      // Animate role tag
+      const tag = document.getElementById("roleTag");
+      if (tag) {
+        tag.classList.remove("fade-anim");
+        void tag.offsetWidth;
+        tag.classList.add("fade-anim");
+        tag.textContent = isDriver ? "Tempo Driver 🚕" : "Passenger 🎒";
+      }
+
+      // Animate form & update submit button
+      const form = document.getElementById("signup-form");
+      if (form) {
+        form.classList.remove("form-anim");
+        void form.offsetWidth;
+        form.classList.add("form-anim");
+      }
+
+      const submitBtn = document.getElementById("signup-submit-btn");
+      if (submitBtn) {
+        submitBtn.innerText = isDriver
+          ? "Register Driver Account →"
+          : "Sign Up as Passenger →";
+      }
     }
 
     document.getElementById("signup-form").addEventListener("submit", async (e) => {
       e.preventDefault();
+      hideSignupAlert();
 
-      const role = document.querySelector(".role-btn.active").innerText;
-      const form = e.target;
-      const name = form.querySelector("input[placeholder='Full Name']").value.trim();
-      const email = form.querySelector("input[type='email']").value.trim();
-      const password = form.querySelector("input[placeholder='Create Password']").value;
-      const confirmPassword = form.querySelector("input[placeholder='Confirm Password']").value;
+      const role = document.querySelector(".role-btn.active").innerText.trim();
+      const name = document.getElementById("signup-name").value.trim();
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value;
+      const confirmPassword = document.getElementById("signup-confirm-password").value;
+      const submitBtn = document.getElementById("signup-submit-btn");
 
       if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+        showSignupAlert("Passwords do not match!");
         return;
       }
+
+      if (password.length < 4) {
+        showSignupAlert("Password must be at least 4 characters long.");
+        return;
+      }
+
+      const payload = { name, email, password, role };
+
+      if (role === "Driver") {
+        const sex = document.getElementById("driver-sex").value.trim();
+        const rawAadhar = document.getElementById("driver-aadhar").value.replace(/[\s-]/g, "").trim();
+        const vehicleType = document.getElementById("driver-vehicle-type").value.trim();
+        const vehicleNo = document.getElementById("driver-vehicle-no").value.trim().toUpperCase();
+
+        if (!sex || !rawAadhar || !vehicleType || !vehicleNo) {
+          showSignupAlert("Please complete all driver registration fields.");
+          return;
+        }
+
+        if (!/^\d{12}$/.test(rawAadhar)) {
+          showSignupAlert("Aadhar number must be exactly 12 digits.");
+          return;
+        }
+
+        payload.sex = sex;
+        payload.aadhar = rawAadhar;
+        payload.vehicleType = vehicleType;
+        payload.vehicleNo = vehicleNo;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = role === "Driver" ? "Saving Driver Profile..." : "Creating Account...";
 
       try {
         const response = await fetch('/api/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role }),
+          body: JSON.stringify(payload),
         });
 
         const result = await response.json();
-        alert(result.message);
 
         if (response.status === 201) {
-          window.location.href = 'login.html';
+          showSignupAlert(`${result.message} Redirecting to login...`, false);
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 900);
+        } else {
+          showSignupAlert(result.message || 'Signup failed. Please check your details.');
+          submitBtn.disabled = false;
+          submitBtn.innerText = role === "Driver" ? "Register Driver Account →" : "Sign Up as Passenger →";
         }
       } catch (error) {
-        alert('An error occurred. Please try again later.');
+        showSignupAlert('An error occurred connecting to the server. Please try again.');
         console.error(error);
+        submitBtn.disabled = false;
+        submitBtn.innerText = role === "Driver" ? "Register Driver Account →" : "Sign Up as Passenger →";
       }
     });
   </script>
