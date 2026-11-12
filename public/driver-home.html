@@ -2,100 +2,639 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tempo Navigator - Driver Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tempo Navigator - Driver Partner Dashboard</title>
   <link rel="stylesheet" href="driver-home.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <h1 onclick="location.href='home.html'">Tempo Navigator</h1>
-    <nav>
-      <a href="home.html">Home</a>
-      <a href="#">Services</a>
-      <a href="#">About Us</a>
-      <a href="#">Contact</a>
+
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <div class="brand" onclick="scrollToSection('overviewSection')">
+      <div class="brand-icon">🚕</div>
+      <h1>Tempo Navigator</h1>
+      <span class="brand-pill">Driver Partner</span>
+    </div>
+
+    <nav class="topbar-nav">
+      <button type="button" class="top-nav-btn active" onclick="scrollToSection('overviewSection', this)">Overview</button>
+      <button type="button" class="top-nav-btn" onclick="scrollToSection('earningsSection', this)">Earnings</button>
+      <button type="button" class="top-nav-btn" onclick="scrollToSection('scheduleSection', this)">Schedule</button>
+      <button type="button" class="top-nav-btn" onclick="scrollToSection('pastRidesSection', this)">Past Rides</button>
+      <button type="button" class="top-nav-btn" onclick="scrollToSection('profileSection', this)">Profile</button>
     </nav>
+
+    <button type="button" class="signout-top-btn" onclick="handleSignOut()">Sign Out</button>
   </header>
 
   <div class="dashboard">
-    <div class="sidebar">
-      <div style="text-align: center">
-        <div style="font-size: 2rem;">👤</div>
-        <p><strong>Welcome back,</strong><br><span id="displayName">Driver John</span></p>
-        <p id="statusText">Driver Status <span id="statusBadge" class="offline-badge">Offline</span></p>
-        <button id="toggleStatusBtn" onclick="toggleStatus()">Go Online</button>
-        <a href="#">My Routes</a>
-        <a href="#">Route History</a>
-        <a href="#" onclick="toggleProfileSettings()">My Profile</a>
-        <button onclick="location.href='login.html'">Sign Out</button>
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="section">
-        <h3>Vehicle Status</h3>
-        <div class="status-boxes">
-          <div class="box">
-            <strong>Vehicle ID</strong><br><span id="displayVehicleId">TN-05-AB-1234</span>
-          </div>
-          <div class="box">
-            <strong>Fuel Status</strong><br>75%
-          </div>
-          <div class="box">
-            <strong>Next Maintenance</strong><br>June 15, 2025
-          </div>
-        </div>
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="driver-profile-header">
+        <div class="driver-avatar-circle" id="driverInitials">DR</div>
+        <h2 class="driver-name-heading" id="displayName">Driver Partner</h2>
+        <p class="driver-sub-email" id="displayEmail">driver@temponavigator.in</p>
+        <div class="driver-rating-pill">★ 4.9 Rating • Verified</div>
+        <div class="vehicle-chip" id="sidebarVehicleChip">🚕 Four Seater • UK-07-TA-2644</div>
       </div>
 
-      <div class="section" style="margin-top: 2rem;">
-        <h3>Today's Schedule</h3>
-        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #17612a;">
-          <div>
-            <strong>Pickup: City Center Hub</strong>
-            <div style="color: #666; font-size: 0.9rem; margin-top: 4px;">Time: 10:30 AM • Passengers: 4</div>
-          </div>
-          <div>
-            <button class="btn btn-green" style="padding: 0.4rem 1rem;">Start Route</button>
-          </div>
-        </div>
-        <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ccc;">
-          <div>
-            <strong>Pickup: North Station Terminal</strong>
-            <div style="color: #666; font-size: 0.9rem; margin-top: 4px;">Time: 2:15 PM • Passengers: 2</div>
-          </div>
-          <div>
-            <span style="color: #666; font-size: 0.9rem;">Upcoming</span>
-          </div>
-        </div>
+      <div class="status-row">
+        <span>Duty Status</span>
+        <span id="statusBadge" class="offline-badge">Offline</span>
       </div>
 
-      <div class="section profile-settings" id="profileSettings">
-        <h3>Edit Profile</h3>
-        <label for="name">Name</label>
-        <input type="text" id="name" placeholder="Enter name">
-        <label for="vehicleId">Vehicle ID</label>
-        <input type="text" id="vehicleId" placeholder="Enter vehicle ID">
-        <label for="phone">Phone Number</label>
-        <input type="text" id="phone" placeholder="Enter phone number">
-        <label for="email">Email ID</label>
-        <input type="email" id="email" placeholder="Enter email">
-        <button class="btn btn-green" onclick="saveProfile()">Save Changes</button>
+      <button type="button" id="toggleStatusBtn" class="toggle-duty-btn" onclick="toggleStatus()">
+        Go Online to Accept Rides
+      </button>
+
+      <div class="sidebar-menu">
+        <button type="button" class="sidebar-link active" onclick="scrollToSection('overviewSection', this)">📊 Dashboard Overview</button>
+        <button type="button" class="sidebar-link" onclick="scrollToSection('earningsSection', this)">💰 Earnings &amp; Payouts</button>
+        <button type="button" class="sidebar-link" onclick="scrollToSection('scheduleSection', this)">🛣️ Today's Schedule</button>
+        <button type="button" class="sidebar-link" onclick="scrollToSection('pastRidesSection', this)">🕘 Past Rides History</button>
+        <button type="button" class="sidebar-link" onclick="scrollToSection('profileSection', this)">⚙️ Vehicle &amp; Profile</button>
+        <button type="button" class="sidebar-link danger" onclick="handleSignOut()">🚪 Sign Out</button>
       </div>
-    </div>
+    </aside>
+
+    <!-- Main Dashboard Content -->
+    <main class="content">
+      <div id="toastBanner" class="toast-banner"></div>
+
+      <!-- Simulated Incoming Ride Request (visible when Driver goes Online) -->
+      <section id="incomingRequestCard" class="incoming-request-card">
+        <div>
+          <span class="req-badge">⚡ New Ride Request Nearby</span>
+          <h3 class="req-title" id="incomingReqRoute">Clock Tower → Dharampur (3.2 km)</h3>
+          <p class="req-sub" id="incomingReqMeta">Passenger: Vikram Singh • 2 Seats • Est. Fare ₹140 (UPI)</p>
+        </div>
+        <div class="req-actions">
+          <button type="button" class="btn-accept" onclick="acceptIncomingRide()">Accept Ride ✓</button>
+          <button type="button" class="btn-decline" onclick="declineIncomingRide()">Decline</button>
+        </div>
+      </section>
+
+      <!-- KPI Overview Row -->
+      <section id="overviewSection" class="kpi-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-label">
+            <span>Today's Earnings</span>
+            <span>💰</span>
+          </div>
+          <div class="kpi-value" id="todayEarningsVal">₹1,280</div>
+          <div class="kpi-sub" id="todayRidesSub">6 trips completed today</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <span>This Week</span>
+            <span>📈</span>
+          </div>
+          <div class="kpi-value" id="weeklyEarningsVal">₹7,450</div>
+          <div class="kpi-sub">+14% vs last week • 38 rides</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <span>Total Lifetime Rides</span>
+            <span>🚕</span>
+          </div>
+          <div class="kpi-value" id="totalRidesVal">318</div>
+          <div class="kpi-sub">98% completion • 4.9 ★ avg</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">
+            <span>Assigned Vehicle</span>
+            <span>⛽</span>
+          </div>
+          <div class="kpi-value" style="font-size: 1.2rem;" id="displayVehicleId">UK-07-TA-2644</div>
+          <div class="kpi-sub" id="displayVehicleMeta">Four Seater • Fuel 78%</div>
+        </div>
+      </section>
+
+      <!-- Weekly Earnings Chart & Payout Breakdown -->
+      <section id="earningsSection" class="two-col-grid">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h3>Weekly Earnings Breakdown</h3>
+              <p class="section-sub">Daily fare collection across Dehradun routes (Mon – Sun)</p>
+            </div>
+            <span style="font-size: 0.85rem; font-weight: 700; color: #166534;">Avg ₹1,064 / day</span>
+          </div>
+          <div class="chart-bars" id="weeklyChartBars"></div>
+          <div class="chart-labels" id="weeklyChartLabels"></div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h3>Payout &amp; Wallet Summary</h3>
+              <p class="section-sub">Current settlement cycle</p>
+            </div>
+          </div>
+          <div class="payout-breakdown">
+            <div class="payout-row">
+              <span>💳 UPI / Online Rides</span>
+              <strong id="upiPayoutVal">₹4,920</strong>
+            </div>
+            <div class="payout-row">
+              <span>💵 Cash Collected</span>
+              <strong id="cashPayoutVal">₹2,530</strong>
+            </div>
+            <div class="payout-row">
+              <span>🎁 On-Time Driver Bonus</span>
+              <strong style="color: #166534;">+₹450</strong>
+            </div>
+            <div class="payout-row" style="background: #f0fdf4; border-color: #bbf7d0;">
+              <span>🏦 Next Bank Settlement</span>
+              <strong style="color: #166534;">Tomorrow, 8:00 AM</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Today's Scheduled Pickups -->
+      <section id="scheduleSection" class="section-card">
+        <div class="section-header">
+          <div>
+            <h3>Today's Scheduled Pickups</h3>
+            <p class="section-sub">Active &amp; upcoming transit slots assigned to your tempo</p>
+          </div>
+        </div>
+        <div class="schedule-list" id="scheduleList"></div>
+      </section>
+
+      <!-- Past Rides History -->
+      <section id="pastRidesSection" class="section-card">
+        <div class="section-header">
+          <div>
+            <h3>Past Rides &amp; Trip Earnings</h3>
+            <p class="section-sub">Completed passenger rides and collected fares</p>
+          </div>
+          <div class="filter-tabs" id="rideFilterTabs">
+            <button type="button" class="filter-tab active" data-filter="all">All Rides</button>
+            <button type="button" class="filter-tab" data-filter="UPI">UPI Paid</button>
+            <button type="button" class="filter-tab" data-filter="Cash">Cash</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="rides-table">
+            <thead>
+              <tr>
+                <th>Ride ID</th>
+                <th>Date &amp; Time</th>
+                <th>Route</th>
+                <th>Passenger</th>
+                <th>Distance</th>
+                <th>Payment</th>
+                <th>Earned</th>
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody id="pastRidesBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Vehicle & Driver Profile Settings -->
+      <section id="profileSection" class="section-card">
+        <div class="section-header">
+          <div>
+            <h3>Vehicle &amp; Driver Profile</h3>
+            <p class="section-sub">Registered details fetched from your Tempo Navigator account</p>
+          </div>
+        </div>
+
+        <div class="profile-form-grid">
+          <div class="form-field">
+            <label for="profileName">Full Name</label>
+            <input type="text" id="profileName" placeholder="Enter full name" />
+          </div>
+          <div class="form-field">
+            <label for="profileEmail">Email Address</label>
+            <input type="email" id="profileEmail" disabled />
+          </div>
+          <div class="form-field">
+            <label for="profileSex">Sex</label>
+            <input type="text" id="profileSex" placeholder="Male / Female / Other" />
+          </div>
+          <div class="form-field">
+            <label for="profileVehicleType">Vehicle Type</label>
+            <select id="profileVehicleType">
+              <option value="Three Seater">Three Seater</option>
+              <option value="Four Seater">Four Seater</option>
+              <option value="Six Seater">Six Seater</option>
+              <option value="Eight Seater">Eight Seater</option>
+              <option value="Ten Seater">Ten Seater</option>
+              <option value="Twelve+ Seater">Twelve+ Seater</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="profileVehicleNo">Vehicle Registration No</label>
+            <input type="text" id="profileVehicleNo" placeholder="e.g. UK-07-TA-1234" style="text-transform: uppercase;" />
+          </div>
+          <div class="form-field">
+            <label for="profileNextService">Next Maintenance Due</label>
+            <input type="text" id="profileNextService" value="Dec 20, 2026" />
+          </div>
+        </div>
+
+        <button type="button" class="btn-green" onclick="saveProfile()">Save Profile Changes</button>
+      </section>
+    </main>
   </div>
 
-  <script src="script.js"></script>
   <script>
-    // Load logged-in user from database session
+    // State hydrated from logged-in user (users.xlsx session)
     const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-    if (currentUser && currentUser.name) {
-      document.getElementById('displayName').textContent = currentUser.name;
-      const nameInput = document.getElementById('name');
-      const emailInput = document.getElementById('email');
-      if (nameInput) nameInput.value = currentUser.name;
-      if (emailInput && currentUser.email) emailInput.value = currentUser.email;
+
+    let isOnline = false;
+    let todayEarnings = 1280;
+    let todayRideCount = 6;
+    let weeklyEarnings = 7450;
+    let totalRides = 318;
+    let upiTotal = 4920;
+    let cashTotal = 2530;
+    let currentFilter = 'all';
+
+    const weeklyData = [
+      { day: 'Mon', amount: 890 },
+      { day: 'Tue', amount: 1120 },
+      { day: 'Wed', amount: 960 },
+      { day: 'Thu', amount: 1340 },
+      { day: 'Fri', amount: 1050 },
+      { day: 'Sat', amount: 1410 },
+      { day: 'Sun', amount: 1280, isToday: true }
+    ];
+
+    const scheduledPickups = [
+      {
+        id: 'SCH-101',
+        route: 'Clock Tower → ISBT',
+        time: '10:30 AM',
+        passengers: 4,
+        distance: '4.5 km',
+        fare: 180,
+        status: 'ready' // ready | active | completed
+      },
+      {
+        id: 'SCH-102',
+        route: 'Rajpur Road → Paltan Bazaar',
+        time: '2:15 PM',
+        passengers: 2,
+        distance: '5.0 km',
+        fare: 150,
+        status: 'upcoming'
+      },
+      {
+        id: 'SCH-103',
+        route: 'Ballupur → Prem Nagar',
+        time: '5:00 PM',
+        passengers: 3,
+        distance: '5.0 km',
+        fare: 165,
+        status: 'upcoming'
+      }
+    ];
+
+    const pastRides = [
+      {
+        id: '#TRP-8421',
+        date: 'Today, 9:45 AM',
+        route: 'Clock Tower → Rajpur Road',
+        passenger: 'Vikram Singh (2 Seats)',
+        distance: '4.0 km',
+        payment: 'UPI',
+        fare: 160,
+        rating: '5.0 ★'
+      },
+      {
+        id: '#TRP-8419',
+        date: 'Today, 8:20 AM',
+        route: 'Dharampur → ISBT',
+        passenger: 'Rishit Verma (3 Seats)',
+        distance: '2.0 km',
+        payment: 'Cash',
+        fare: 110,
+        rating: '4.9 ★'
+      },
+      {
+        id: '#TRP-8412',
+        date: 'Yesterday, 6:15 PM',
+        route: 'Prem Nagar → Clock Tower',
+        passenger: 'Priyanshi Joshi (1 Seat)',
+        distance: '8.0 km',
+        payment: 'UPI',
+        fare: 240,
+        rating: '5.0 ★'
+      },
+      {
+        id: '#TRP-8405',
+        date: 'Yesterday, 1:50 PM',
+        route: 'Paltan Bazaar → Saharanpur Chowk',
+        passenger: 'Aman Deep (4 Seats)',
+        distance: '2.5 km',
+        payment: 'Cash',
+        fare: 130,
+        rating: '4.8 ★'
+      },
+      {
+        id: '#TRP-8398',
+        date: 'Nov 10, 4:30 PM',
+        route: 'Vasant Vihar → Mussoorie Road',
+        passenger: 'Divyansh Rana (2 Seats)',
+        distance: '5.0 km',
+        payment: 'UPI',
+        fare: 210,
+        rating: '5.0 ★'
+      },
+      {
+        id: '#TRP-8389',
+        date: 'Nov 10, 10:10 AM',
+        route: 'Dehradun → Maldevta',
+        passenger: 'Lalit Sharma (3 Seats)',
+        distance: '8.0 km',
+        payment: 'UPI',
+        fare: 290,
+        rating: '4.9 ★'
+      }
+    ];
+
+    function showToast(message) {
+      const toast = document.getElementById('toastBanner');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3600);
     }
+
+    function getInitials(name) {
+      if (!name) return 'DR';
+      const parts = name.trim().split(/\s+/);
+      return parts.slice(0, 2).map(p => p[0].toUpperCase()).join('');
+    }
+
+    function hydrateDriverProfile() {
+      const name = (currentUser && currentUser.name) || 'Rajesh Kumar';
+      const email = (currentUser && currentUser.email) || 'rajesh.driver@gmail.com';
+      const sex = (currentUser && currentUser.sex) || 'Male';
+      const vehicleType = (currentUser && currentUser.vehicleType) || 'Four Seater';
+      const vehicleNo = (currentUser && currentUser.vehicleNo) || 'UK-07-TA-2644';
+
+      document.getElementById('driverInitials').textContent = getInitials(name);
+      document.getElementById('displayName').textContent = name;
+      document.getElementById('displayEmail').textContent = email;
+      document.getElementById('sidebarVehicleChip').textContent = `🚕 ${vehicleType} • ${vehicleNo}`;
+      document.getElementById('displayVehicleId').textContent = vehicleNo;
+      document.getElementById('displayVehicleMeta').textContent = `${vehicleType} • Fuel 78%`;
+
+      document.getElementById('profileName').value = name;
+      document.getElementById('profileEmail').value = email;
+      document.getElementById('profileSex').value = sex;
+      document.getElementById('profileVehicleType').value = vehicleType;
+      document.getElementById('profileVehicleNo').value = vehicleNo;
+    }
+
+    function updateKPIUI() {
+      document.getElementById('todayEarningsVal').textContent = `₹${todayEarnings.toLocaleString('en-IN')}`;
+      document.getElementById('todayRidesSub').textContent = `${todayRideCount} trips completed today`;
+      document.getElementById('weeklyEarningsVal').textContent = `₹${weeklyEarnings.toLocaleString('en-IN')}`;
+      document.getElementById('totalRidesVal').textContent = String(totalRides);
+      document.getElementById('upiPayoutVal').textContent = `₹${upiTotal.toLocaleString('en-IN')}`;
+      document.getElementById('cashPayoutVal').textContent = `₹${cashTotal.toLocaleString('en-IN')}`;
+      weeklyData[weeklyData.length - 1].amount = todayEarnings;
+      renderWeeklyChart();
+    }
+
+    function renderWeeklyChart() {
+      const barsEl = document.getElementById('weeklyChartBars');
+      const labelsEl = document.getElementById('weeklyChartLabels');
+      const maxVal = Math.max(...weeklyData.map(d => d.amount), 1500);
+
+      barsEl.innerHTML = '';
+      labelsEl.innerHTML = '';
+
+      weeklyData.forEach(item => {
+        const pct = Math.max(14, Math.round((item.amount / maxVal) * 100));
+        const col = document.createElement('div');
+        col.className = 'bar-col';
+        col.innerHTML = `
+          <span class="bar-amount">₹${item.amount}</span>
+          <div class="bar-fill ${item.isToday ? '' : 'muted'}" style="height: ${pct}%;" title="${item.day}: ₹${item.amount}"></div>
+        `;
+        barsEl.appendChild(col);
+
+        const lbl = document.createElement('span');
+        lbl.textContent = item.isToday ? `${item.day} (Today)` : item.day;
+        if (item.isToday) lbl.style.color = '#166534';
+        labelsEl.appendChild(lbl);
+      });
+    }
+
+    function renderSchedule() {
+      const list = document.getElementById('scheduleList');
+      list.innerHTML = '';
+
+      scheduledPickups.forEach(item => {
+        const row = document.createElement('div');
+        row.className = `schedule-item ${item.status}`;
+
+        let actionHtml = '';
+        if (item.status === 'ready') {
+          actionHtml = `<button type="button" class="btn-green" onclick="startScheduledRide('${item.id}')">Start Ride →</button>`;
+        } else if (item.status === 'active') {
+          actionHtml = `<button type="button" class="btn-green" style="background:#0369a1;" onclick="completeScheduledRide('${item.id}')">Complete Ride ✓</button>`;
+        } else if (item.status === 'upcoming') {
+          actionHtml = `<button type="button" class="btn-outline" onclick="startScheduledRide('${item.id}')">Start Early</button>`;
+        } else {
+          actionHtml = `<span style="color:#166534; font-weight:700; font-size:0.84rem;">Completed ✓</span>`;
+        }
+
+        row.innerHTML = `
+          <div>
+            <div class="schedule-title">${item.route}</div>
+            <div class="schedule-meta">⏰ ${item.time} • 👥 ${item.passengers} Passengers • 📍 ${item.distance} • Fare ₹${item.fare}</div>
+          </div>
+          <div>${actionHtml}</div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderPastRides() {
+      const tbody = document.getElementById('pastRidesBody');
+      tbody.innerHTML = '';
+
+      const filtered = currentFilter === 'all'
+        ? pastRides
+        : pastRides.filter(r => r.payment === currentFilter);
+
+      filtered.forEach(ride => {
+        const tr = document.createElement('tr');
+        const payClass = ride.payment === 'UPI' ? 'upi' : 'cash';
+        tr.innerHTML = `
+          <td style="font-weight: 700; color: #475569;">${ride.id}</td>
+          <td style="color: #64748b;">${ride.date}</td>
+          <td style="font-weight: 600;">${ride.route}</td>
+          <td>${ride.passenger}</td>
+          <td>${ride.distance}</td>
+          <td><span class="pay-pill ${payClass}">${ride.payment}</span></td>
+          <td class="fare-cell">₹${ride.fare}</td>
+          <td style="font-weight: 600; color: #b45309;">${ride.rating}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleStatus() {
+      isOnline = !isOnline;
+      const badge = document.getElementById('statusBadge');
+      const btn = document.getElementById('toggleStatusBtn');
+      const reqCard = document.getElementById('incomingRequestCard');
+
+      if (isOnline) {
+        badge.className = 'online-badge';
+        badge.textContent = 'Online';
+        btn.classList.add('is-online');
+        btn.textContent = 'Go Offline';
+        showToast('🟢 You are now Online and visible to nearby passengers!');
+        setTimeout(() => {
+          if (isOnline) reqCard.classList.add('visible');
+        }, 700);
+      } else {
+        badge.className = 'offline-badge';
+        badge.textContent = 'Offline';
+        btn.classList.remove('is-online');
+        btn.textContent = 'Go Online to Accept Rides';
+        reqCard.classList.remove('visible');
+        showToast('🔴 You are now Offline.');
+      }
+    }
+
+    function acceptIncomingRide() {
+      const reqCard = document.getElementById('incomingRequestCard');
+      reqCard.classList.remove('visible');
+
+      scheduledPickups.unshift({
+        id: 'SCH-' + Math.floor(200 + Math.random() * 799),
+        route: 'Clock Tower → Dharampur',
+        time: 'Live Pickup Now',
+        passengers: 2,
+        distance: '3.2 km',
+        fare: 140,
+        status: 'active'
+      });
+      renderSchedule();
+      showToast('✅ Ride accepted! Added to Active Schedule — click "Complete Ride ✓" when dropped.');
+    }
+
+    function declineIncomingRide() {
+      document.getElementById('incomingRequestCard').classList.remove('visible');
+      showToast('Ride request skipped. Waiting for next nearby passenger...');
+    }
+
+    function startScheduledRide(id) {
+      const target = scheduledPickups.find(s => s.id === id);
+      if (!target) return;
+      target.status = 'active';
+      renderSchedule();
+      showToast(`🚕 Started ride: ${target.route}`);
+    }
+
+    function completeScheduledRide(id) {
+      const target = scheduledPickups.find(s => s.id === id);
+      if (!target) return;
+      target.status = 'completed';
+
+      todayEarnings += target.fare;
+      weeklyEarnings += target.fare;
+      todayRideCount += 1;
+      totalRides += 1;
+      upiTotal += target.fare;
+
+      pastRides.unshift({
+        id: '#TRP-' + Math.floor(8500 + Math.random() * 499),
+        date: 'Just now',
+        route: target.route,
+        passenger: `Passenger Group (${target.passengers} Seats)`,
+        distance: target.distance,
+        payment: 'UPI',
+        fare: target.fare,
+        rating: '5.0 ★'
+      });
+
+      renderSchedule();
+      renderPastRides();
+      updateKPIUI();
+      showToast(`🎉 Ride completed! +₹${target.fare} added to Today's Earnings.`);
+    }
+
+    function saveProfile() {
+      const updatedName = document.getElementById('profileName').value.trim();
+      const updatedSex = document.getElementById('profileSex').value.trim();
+      const updatedType = document.getElementById('profileVehicleType').value;
+      const updatedNo = document.getElementById('profileVehicleNo').value.trim().toUpperCase();
+
+      if (!updatedName || !updatedNo) {
+        showToast('⚠️ Please enter your name and vehicle registration number.');
+        return;
+      }
+
+      const updatedUser = {
+        ...(currentUser || {}),
+        name: updatedName,
+        sex: updatedSex,
+        vehicleType: updatedType,
+        vehicleNo: updatedNo
+      };
+      sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+      document.getElementById('driverInitials').textContent = getInitials(updatedName);
+      document.getElementById('displayName').textContent = updatedName;
+      document.getElementById('sidebarVehicleChip').textContent = `🚕 ${updatedType} • ${updatedNo}`;
+      document.getElementById('displayVehicleId').textContent = updatedNo;
+      document.getElementById('displayVehicleMeta').textContent = `${updatedType} • Fuel 78%`;
+
+      showToast('✅ Driver profile & vehicle details updated!');
+    }
+
+    function scrollToSection(sectionId, clickedBtn) {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      if (clickedBtn) {
+        const group = clickedBtn.classList.contains('top-nav-btn') ? '.top-nav-btn' : '.sidebar-link';
+        document.querySelectorAll(group).forEach(b => b.classList.remove('active'));
+        clickedBtn.classList.add('active');
+      }
+    }
+
+    function handleSignOut() {
+      sessionStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('rideFilterTabs').addEventListener('click', e => {
+      const tab = e.target.closest('.filter-tab');
+      if (!tab) return;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentFilter = tab.dataset.filter;
+      renderPastRides();
+    });
+
+    // Initialize dashboard
+    hydrateDriverProfile();
+    updateKPIUI();
+    renderSchedule();
+    renderPastRides();
   </script>
 </body>
 </html>
