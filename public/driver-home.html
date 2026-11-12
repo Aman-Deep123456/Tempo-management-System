@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tempo Navigator - Driver Partner Dashboard</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
   <link rel="stylesheet" href="driver-home.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -56,11 +61,80 @@
         <button type="button" class="sidebar-link" onclick="scrollToSection('profileSection', this)">⚙️ Vehicle &amp; Profile</button>
         <button type="button" class="sidebar-link danger" onclick="handleSignOut()">🚪 Sign Out</button>
       </div>
+
+      <!-- Transit Helpline & Dispatch Support -->
+      <div class="sidebar-support-widget">
+        <div class="support-title">
+          <span>📞 Dispatch &amp; Support</span>
+          <span class="support-badge">24x7</span>
+        </div>
+        <p class="support-info">Helpline: <strong>+91 (0135) 271-TEMPO</strong></p>
+        <p class="support-hub">📍 Hub: ISBT Transit Desk</p>
+        <button type="button" class="sos-btn" onclick="triggerSOS()">🚨 Emergency SOS</button>
+      </div>
     </aside>
 
     <!-- Main Dashboard Content -->
     <main class="content">
       <div id="toastBanner" class="toast-banner"></div>
+
+      <!-- Admin Warning & Maintenance Directive Banner -->
+      <div id="adminNoticeBanner" class="admin-notice-card" style="display: none; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 14px; padding: 1rem 1.25rem; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.08);"></div>
+
+      <!-- 🚕 Live Active Ride Navigation & Map Simulation Section -->
+      <section id="activeRideSimulationSection" class="simulation-card" style="display: none;">
+        <div class="sim-header">
+          <div>
+            <span class="sim-pulse-badge">🟢 Live Ride in Progress</span>
+            <h3 id="simRouteTitle" class="sim-title">Clock Tower → ISBT</h3>
+            <p id="simMetaText" class="sim-sub">Passenger: 4 Passengers • Fare: ₹180</p>
+          </div>
+          <div class="sim-controls">
+            <button type="button" class="sim-speed-btn" id="simSpeedBtn" onclick="toggleSimSpeed()">⚡ 2.5x Speed</button>
+          </div>
+        </div>
+
+        <!-- Simulation Leaflet Map Container -->
+        <div id="driverSimMap" class="driver-sim-map"></div>
+
+        <!-- Cockpit HUD / Live Ride Stats -->
+        <div class="sim-hud">
+          <div class="sim-progress-track">
+            <div class="sim-progress-fill" id="simProgressFill" style="width: 0%;"></div>
+          </div>
+
+          <div class="sim-stats-grid">
+            <div class="sim-stat-tile">
+              <span class="sim-tile-label">Navigation Guidance</span>
+              <strong class="sim-tile-val" id="simNavStatus">Starting trip from Clock Tower...</strong>
+            </div>
+            <div class="sim-stat-tile">
+              <span class="sim-tile-label">Remaining Distance</span>
+              <strong class="sim-tile-val" id="simDistRemaining">4.5 km</strong>
+            </div>
+            <div class="sim-stat-tile">
+              <span class="sim-tile-label">Est. Time</span>
+              <strong class="sim-tile-val" id="simEtaRemaining">~11 mins</strong>
+            </div>
+            <div class="sim-stat-tile highlight">
+              <span class="sim-tile-label">Trip Fare</span>
+              <strong class="sim-tile-val" id="simFareVal">₹180</strong>
+            </div>
+          </div>
+
+          <!-- Bottom Action Bar (Only enabled once destination is reached) -->
+          <div class="sim-action-bar">
+            <div class="sim-lock-hint" id="simLockHint">
+              <span class="lock-icon">🔒</span>
+              <span>Vehicle in transit. Completion button will unlock automatically upon arrival.</span>
+            </div>
+            <button type="button" class="sim-finish-btn" id="simFinishRideBtn" disabled onclick="completeActiveRideSimulation()">
+              <span class="sim-btn-radar-dot"></span>
+              <span>En Route to Destination (Locked 🔒)</span>
+            </button>
+          </div>
+        </div>
+      </section>
 
       <!-- Simulated Incoming Ride Request (visible when Driver goes Online) -->
       <section id="incomingRequestCard" class="incoming-request-card">
@@ -131,8 +205,8 @@
         <div class="section-card">
           <div class="section-header">
             <div>
-              <h3>Payout &amp; Wallet Summary</h3>
-              <p class="section-sub">Current settlement cycle</p>
+              <h3>Earnings &amp; Wallet Summary</h3>
+              <p class="section-sub">Current week breakdown</p>
             </div>
           </div>
           <div class="payout-breakdown">
@@ -147,10 +221,6 @@
             <div class="payout-row">
               <span>🎁 On-Time Driver Bonus</span>
               <strong style="color: #166534;">+₹450</strong>
-            </div>
-            <div class="payout-row" style="background: #f0fdf4; border-color: #bbf7d0;">
-              <span>🏦 Next Bank Settlement</span>
-              <strong style="color: #166534;">Tomorrow, 8:00 AM</strong>
             </div>
           </div>
         </div>
@@ -205,52 +275,103 @@
         <div class="section-header">
           <div>
             <h3>Vehicle &amp; Driver Profile</h3>
-            <p class="section-sub">Registered details fetched from your Tempo Navigator account</p>
+            <p class="section-sub">Registered details from your Tempo Navigator account</p>
+          </div>
+          <button type="button" class="btn-outline" id="editProfileBtn" onclick="toggleProfileEdit(true)">
+            ✏️ Edit Profile
+          </button>
+        </div>
+
+        <!-- Read-Only Profile Overview -->
+        <div id="profileViewMode" class="profile-view-grid">
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Full Name</div>
+            <div class="profile-info-value" id="viewProfileName">--</div>
+          </div>
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Email Address</div>
+            <div class="profile-info-value" id="viewProfileEmail">--</div>
+          </div>
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Sex</div>
+            <div class="profile-info-value" id="viewProfileSex">--</div>
+          </div>
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Vehicle Type</div>
+            <div class="profile-info-value" id="viewProfileVehicleType">--</div>
+          </div>
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Vehicle Registration No</div>
+            <div class="profile-info-value" id="viewProfileVehicleNo">--</div>
+          </div>
+          <div class="profile-info-tile">
+            <div class="profile-info-label">Next Maintenance Due</div>
+            <div class="profile-info-value" id="viewProfileService">Dec 20, 2026</div>
           </div>
         </div>
 
-        <div class="profile-form-grid">
-          <div class="form-field">
-            <label for="profileName">Full Name</label>
-            <input type="text" id="profileName" placeholder="Enter full name" />
+        <!-- Editable Profile Section -->
+        <form id="profileEditMode" style="display: none;" onsubmit="saveProfile(event)">
+          <div class="profile-form-grid">
+            <div class="form-field">
+              <label for="profileName">Full Name</label>
+              <input type="text" id="profileName" placeholder="Enter full name" required />
+            </div>
+            <div class="form-field">
+              <label for="profileEmail">Email Address</label>
+              <input type="email" id="profileEmail" disabled />
+            </div>
+            <div class="form-field">
+              <label for="profileSex">Sex</label>
+              <select id="profileSex">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="profileVehicleType">Vehicle Type</label>
+              <select id="profileVehicleType">
+                <option value="Three Seater">Three Seater</option>
+                <option value="Four Seater">Four Seater</option>
+                <option value="Six Seater">Six Seater</option>
+                <option value="Eight Seater">Eight Seater</option>
+                <option value="Ten Seater">Ten Seater</option>
+                <option value="Twelve+ Seater">Twelve+ Seater</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="profileVehicleNo">Vehicle Registration No</label>
+              <input type="text" id="profileVehicleNo" placeholder="e.g. UK-07-TA-1234" style="text-transform: uppercase;" required />
+            </div>
+            <div class="form-field">
+              <label for="profileNextService">Next Maintenance Due</label>
+              <input type="text" id="profileNextService" value="Dec 20, 2026" />
+            </div>
           </div>
-          <div class="form-field">
-            <label for="profileEmail">Email Address</label>
-            <input type="email" id="profileEmail" disabled />
-          </div>
-          <div class="form-field">
-            <label for="profileSex">Sex</label>
-            <input type="text" id="profileSex" placeholder="Male / Female / Other" />
-          </div>
-          <div class="form-field">
-            <label for="profileVehicleType">Vehicle Type</label>
-            <select id="profileVehicleType">
-              <option value="Three Seater">Three Seater</option>
-              <option value="Four Seater">Four Seater</option>
-              <option value="Six Seater">Six Seater</option>
-              <option value="Eight Seater">Eight Seater</option>
-              <option value="Ten Seater">Ten Seater</option>
-              <option value="Twelve+ Seater">Twelve+ Seater</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="profileVehicleNo">Vehicle Registration No</label>
-            <input type="text" id="profileVehicleNo" placeholder="e.g. UK-07-TA-1234" style="text-transform: uppercase;" />
-          </div>
-          <div class="form-field">
-            <label for="profileNextService">Next Maintenance Due</label>
-            <input type="text" id="profileNextService" value="Dec 20, 2026" />
-          </div>
-        </div>
 
-        <button type="button" class="btn-green" onclick="saveProfile()">Save Profile Changes</button>
+          <div class="profile-edit-actions">
+            <button type="submit" id="saveProfileBtn" class="btn-green">Save Changes 💾</button>
+            <button type="button" class="btn-outline" onclick="toggleProfileEdit(false)">Cancel</button>
+          </div>
+        </form>
       </section>
     </main>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="Route.js"></script>
   <script>
-    // State hydrated from logged-in user (users.xlsx session)
-    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    // State safely hydrated from logged-in user (users.xlsx session)
+    let currentUser = null;
+    try {
+      const stored = sessionStorage.getItem('currentUser');
+      if (stored && stored !== 'undefined' && stored !== 'null') {
+        currentUser = JSON.parse(stored);
+      }
+    } catch {
+      currentUser = null;
+    }
 
     let isOnline = false;
     let todayEarnings = 1280;
@@ -260,6 +381,13 @@
     let upiTotal = 4920;
     let cashTotal = 2530;
     let currentFilter = 'all';
+
+    // Live Map Simulation State
+    let simMap = null;
+    let simLayerGroup = null;
+    let simAnimId = null;
+    let simSpeedMultiplier = 1;
+    let activeSimTrip = null;
 
     const weeklyData = [
       { day: 'Mon', amount: 890 },
@@ -386,6 +514,7 @@
       const sex = (currentUser && currentUser.sex) || 'Male';
       const vehicleType = (currentUser && currentUser.vehicleType) || 'Four Seater';
       const vehicleNo = (currentUser && currentUser.vehicleNo) || 'UK-07-TA-2644';
+      const serviceDate = document.getElementById('profileNextService').value || 'Dec 20, 2026';
 
       document.getElementById('driverInitials').textContent = getInitials(name);
       document.getElementById('displayName').textContent = name;
@@ -394,11 +523,53 @@
       document.getElementById('displayVehicleId').textContent = vehicleNo;
       document.getElementById('displayVehicleMeta').textContent = `${vehicleType} • Fuel 78%`;
 
+      // Populate View Mode tiles
+      document.getElementById('viewProfileName').textContent = name;
+      document.getElementById('viewProfileEmail').textContent = email;
+      document.getElementById('viewProfileSex').textContent = sex;
+      document.getElementById('viewProfileVehicleType').textContent = vehicleType;
+      document.getElementById('viewProfileVehicleNo').textContent = vehicleNo;
+      document.getElementById('viewProfileService').textContent = serviceDate;
+
+      // Populate Edit Form fields
       document.getElementById('profileName').value = name;
       document.getElementById('profileEmail').value = email;
-      document.getElementById('profileSex').value = sex;
+      document.getElementById('profileSex').value = ['Male', 'Female', 'Other'].includes(sex) ? sex : 'Male';
       document.getElementById('profileVehicleType').value = vehicleType;
       document.getElementById('profileVehicleNo').value = vehicleNo;
+
+      // Display Admin Warning / Maintenance Directives if any
+      const warning = (currentUser && currentUser.warning) || '';
+      const maintenanceDue = (currentUser && currentUser.maintenanceDue) || serviceDate;
+      const warnBanner = document.getElementById('adminNoticeBanner');
+      if (warnBanner) {
+        if (warning) {
+          warnBanner.style.display = 'block';
+          warnBanner.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+              <span style="font-size: 24px;">⚠️</span>
+              <div>
+                <strong style="color: #92400e; font-size: 0.95rem;">Administrative Directive & Safety Warning</strong>
+                <p style="margin: 4px 0 6px; color: #78350f; font-size: 0.86rem; line-height: 1.4;">${warning}</p>
+                <span style="display: inline-block; background: #fef3c7; border: 1px solid #fcd34d; color: #b45309; padding: 2px 8px; border-radius: 999px; font-size: 0.76rem; font-weight: 700;">
+                  🛠️ Maintenance Inspection Due: ${maintenanceDue}
+                </span>
+              </div>
+            </div>
+          `;
+        } else {
+          warnBanner.style.display = 'none';
+        }
+      }
+    }
+
+    function toggleProfileEdit(isEdit) {
+      document.getElementById('profileViewMode').style.display = isEdit ? 'none' : 'grid';
+      document.getElementById('profileEditMode').style.display = isEdit ? 'block' : 'none';
+      document.getElementById('editProfileBtn').style.display = isEdit ? 'none' : 'inline-block';
+      if (isEdit) {
+        hydrateDriverProfile();
+      }
     }
 
     function updateKPIUI() {
@@ -449,7 +620,7 @@
         if (item.status === 'ready') {
           actionHtml = `<button type="button" class="btn-green" onclick="startScheduledRide('${item.id}')">Start Ride →</button>`;
         } else if (item.status === 'active') {
-          actionHtml = `<button type="button" class="btn-green" style="background:#0369a1;" onclick="completeScheduledRide('${item.id}')">Complete Ride ✓</button>`;
+          actionHtml = `<button type="button" class="btn-green" style="background:#0369a1;" onclick="startScheduledRide('${item.id}')">Live On Map 🚕</button>`;
         } else if (item.status === 'upcoming') {
           actionHtml = `<button type="button" class="btn-outline" onclick="startScheduledRide('${item.id}')">Start Early</button>`;
         } else {
@@ -521,17 +692,20 @@
       const reqCard = document.getElementById('incomingRequestCard');
       reqCard.classList.remove('visible');
 
-      scheduledPickups.unshift({
-        id: 'SCH-' + Math.floor(200 + Math.random() * 799),
+      const newId = 'SCH-' + Math.floor(200 + Math.random() * 799);
+      const newRide = {
+        id: newId,
         route: 'Clock Tower → Dharampur',
         time: 'Live Pickup Now',
         passengers: 2,
         distance: '3.2 km',
         fare: 140,
-        status: 'active'
-      });
+        status: 'ready'
+      };
+      scheduledPickups.unshift(newRide);
       renderSchedule();
-      showToast('✅ Ride accepted! Added to Active Schedule — click "Complete Ride ✓" when dropped.');
+      showToast('✅ Ride accepted! Starting interactive map navigation...');
+      startScheduledRide(newId);
     }
 
     function declineIncomingRide() {
@@ -539,12 +713,377 @@
       showToast('Ride request skipped. Waiting for next nearby passenger...');
     }
 
-    function startScheduledRide(id) {
+    function triggerSOS() {
+      const confirmed = confirm(
+        '🚨 TEMPO TRANSIT EMERGENCY SOS\n\n' +
+        'Do you require emergency dispatch assistance?\n\n' +
+        'Click OK to broadcast your live GPS coordinates to:\n' +
+        '• Dehradun Police Control Room (112)\n' +
+        '• ISBT Transit Dispatch Hub (+91 0135 271-TEMPO)'
+      );
+      if (confirmed) {
+        showToast('🚨 SOS Emergency Beacon Broadcasted to ISBT Control Hub. Help is alerted!');
+      }
+    }
+
+    function toggleSimSpeed() {
+      const btn = document.getElementById('simSpeedBtn');
+      if (simSpeedMultiplier === 1) {
+        simSpeedMultiplier = 2.5;
+        btn.textContent = '🐢 1x Normal (Slow)';
+        btn.style.background = '#dcfce7';
+        btn.style.borderColor = '#86efac';
+        showToast('⚡ Simulation speed boosted to 2.5x');
+      } else {
+        simSpeedMultiplier = 1;
+        btn.textContent = '⚡ 2.5x Fast Forward';
+        btn.style.background = '#ffffff';
+        btn.style.borderColor = '#cbd5e1';
+        showToast('🐢 Simulation speed set to 1x realistic street pace');
+      }
+    }
+
+    // Geometry & Animation Helpers (safely reuse or fallback without variable collision)
+    function computeGeoDistance(p1, p2) {
+      if (window.TempoRouter && typeof window.TempoRouter.haversineDistance === 'function') {
+        return window.TempoRouter.haversineDistance(p1, p2);
+      }
+      const [lat1, lon1] = p1;
+      const [lat2, lon2] = p2;
+      const rad = d => (d * Math.PI) / 180;
+      const R = 6371;
+      const dLat = rad(lat2 - lat1);
+      const dLon = rad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function buildCurvedApproachPath(startCoord, endCoord, segments = 35) {
+      const [lat1, lng1] = startCoord;
+      const [lat2, lng2] = endCoord;
+      const dLat = lat2 - lat1;
+      const dLng = lng2 - lng1;
+      const midLat = (lat1 + lat2) / 2 + dLng * 0.16;
+      const midLng = (lng1 + lng2) / 2 - dLat * 0.16;
+
+      const pts = [];
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const lat = (1 - t) * (1 - t) * lat1 + 2 * (1 - t) * t * midLat + t * t * lat2;
+        const lng = (1 - t) * (1 - t) * lng1 + 2 * (1 - t) * t * midLng + t * t * lng2;
+        pts.push([lat, lng]);
+      }
+      return pts;
+    }
+
+    function resamplePolyline(points, totalSteps = 240) {
+      if (points.length < 2) return points;
+      const segLengths = [];
+      let totalLen = 0;
+      for (let i = 0; i < points.length - 1; i++) {
+        const d = computeGeoDistance(points[i], points[i + 1]);
+        segLengths.push(d);
+        totalLen += d;
+      }
+      if (totalLen === 0) return points;
+
+      const resampled = [];
+      for (let s = 0; s <= totalSteps; s++) {
+        const targetDist = (s / totalSteps) * totalLen;
+        let acc = 0;
+        let placed = false;
+        for (let i = 0; i < segLengths.length; i++) {
+          const seg = segLengths[i];
+          if (acc + seg >= targetDist || i === segLengths.length - 1) {
+            const ratio = seg > 0 ? Math.min(1, Math.max(0, (targetDist - acc) / seg)) : 0;
+            const lat = points[i][0] + (points[i + 1][0] - points[i][0]) * ratio;
+            const lng = points[i][1] + (points[i + 1][1] - points[i][1]) * ratio;
+            resampled.push([lat, lng]);
+            placed = true;
+            break;
+          }
+          acc += seg;
+        }
+        if (!placed) resampled.push(points[points.length - 1]);
+      }
+      return resampled;
+    }
+
+    function getInterpolatedLatLng(points, prog) {
+      if (!points || points.length === 0) return { index: 0, latLng: [0, 0] };
+      if (points.length === 1) return { index: 0, latLng: points[0] };
+      const exact = prog * (points.length - 1);
+      const i = Math.min(points.length - 2, Math.floor(exact));
+      const frac = exact - i;
+      const p0 = points[i];
+      const p1 = points[i + 1] || p0;
+      return {
+        index: i,
+        latLng: [p0[0] + (p1[0] - p0[0]) * frac, p0[1] + (p1[1] - p0[1]) * frac]
+      };
+    }
+
+    async function fetchRoadPolyline(waypoints) {
+      if (!waypoints || waypoints.length < 2) return waypoints;
+      try {
+        const coordStr = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) return waypoints;
+        const data = await res.json();
+        if (data.routes && data.routes[0] && data.routes[0].geometry) {
+          return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+        }
+      } catch {
+        // Fallback to waypoint interpolation
+      }
+      return waypoints;
+    }
+
+    async function startScheduledRide(id) {
       const target = scheduledPickups.find(s => s.id === id);
       if (!target) return;
+
+      if (activeSimTrip && activeSimTrip.id === id) {
+        const simSection = document.getElementById('activeRideSimulationSection');
+        simSection.style.display = 'block';
+        simSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
+      if (activeSimTrip && activeSimTrip.id !== id && activeSimTrip.status === 'active') {
+        showToast('⚠️ Complete your current active ride before starting a new one!');
+        document.getElementById('activeRideSimulationSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+
       target.status = 'active';
+      activeSimTrip = target;
       renderSchedule();
-      showToast(`🚕 Started ride: ${target.route}`);
+
+      // Show Simulation Card & scroll smoothly into view
+      const simSection = document.getElementById('activeRideSimulationSection');
+      simSection.style.display = 'block';
+      simSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Parse route endpoints (e.g. "Clock Tower → ISBT")
+      const parts = target.route.split(/→|->/).map(s => s.trim());
+      const srcName = parts[0] || 'Clock Tower';
+      const dstName = parts[1] || 'ISBT';
+
+      // Update Simulation Header & HUD values
+      document.getElementById('simRouteTitle').textContent = target.route;
+      document.getElementById('simMetaText').textContent = `👥 ${target.passengers} Passengers • 📍 ${target.distance} • Fare ₹${target.fare}`;
+      document.getElementById('simFareVal').textContent = `₹${target.fare}`;
+      document.getElementById('simDistRemaining').textContent = target.distance;
+      document.getElementById('simEtaRemaining').textContent = `~${Math.round(parseFloat(target.distance) * 2.5)} mins`;
+      document.getElementById('simNavStatus').textContent = `Starting trip from ${srcName}...`;
+      document.getElementById('simProgressFill').style.width = '0%';
+
+      // Lock Finish Ride button while in transit
+      const finishBtn = document.getElementById('simFinishRideBtn');
+      finishBtn.disabled = true;
+      finishBtn.classList.remove('ready');
+      finishBtn.innerHTML = `
+        <span class="sim-btn-radar-dot"></span>
+        <span>En Route to Destination (Locked 🔒)</span>
+      `;
+
+      const lockHint = document.getElementById('simLockHint');
+      lockHint.innerHTML = `
+        <span class="lock-icon">🔒</span>
+        <span>Vehicle in transit. Completion button will unlock automatically upon arrival at ${dstName}.</span>
+      `;
+
+      // Get waypoints from TempoRouter coordinates
+      const coordsMap = (window.TempoRouter && window.TempoRouter.coordinates) || {
+        "Clock Tower": [30.3244, 78.0339],
+        "Rajpur Road": [30.3683, 78.0800],
+        "Ballupur": [30.3115, 77.9977],
+        "Prem Nagar": [30.2912, 77.9562],
+        "ISBT": [30.2823, 78.0138],
+        "Dehradun": [30.3165, 78.0322],
+        "Maldevta": [30.3957, 78.1319],
+        "Paltan Bazaar": [30.3201, 78.0402],
+        "Saharanpur Chowk": [30.3082, 78.0246],
+        "Dharampur": [30.3012, 78.0270],
+        "Vasant Vihar": [30.3247, 77.9935],
+        "Mussoorie Road": [30.4032, 78.1031]
+      };
+
+      let waypoints = [];
+      if (window.TempoRouter && window.TempoRouter.getFloydPath) {
+        const floyd = window.TempoRouter.getFloydPath(srcName, dstName);
+        if (floyd && floyd.path && floyd.path.length > 0) {
+          waypoints = floyd.path.map(p => coordsMap[p] || coordsMap['Clock Tower']);
+        }
+      }
+      if (waypoints.length < 2) {
+        const p1 = coordsMap[srcName] || [30.3244, 78.0339];
+        const p2 = coordsMap[dstName] || [30.2823, 78.0138];
+        waypoints = [p1, p2];
+      }
+
+      // Initialize Leaflet map if not yet created
+      if (!simMap && typeof L !== 'undefined') {
+        simMap = L.map('driverSimMap', { zoomControl: true }).setView(waypoints[0], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(simMap);
+        simLayerGroup = L.layerGroup().addTo(simMap);
+      }
+
+      // Ensure tile sizes adjust correctly
+      setTimeout(() => {
+        if (simMap) simMap.invalidateSize();
+      }, 180);
+
+      // Cancel any ongoing animation and clear layers
+      if (simAnimId) {
+        cancelAnimationFrame(simAnimId);
+        simAnimId = null;
+      }
+      if (simLayerGroup) {
+        simLayerGroup.clearLayers();
+      }
+
+      showToast(`🚕 Ride started: ${target.route}. Simulating route on map...`);
+
+      // Try fetching road polyline, or fallback to curved path
+      let rawRoute = await fetchRoadPolyline(waypoints);
+      if (!rawRoute || rawRoute.length <= 2) {
+        rawRoute = [];
+        for (let w = 0; w < waypoints.length - 1; w++) {
+          const seg = buildCurvedApproachPath(waypoints[w], waypoints[w + 1], 25);
+          if (w > 0) seg.shift();
+          rawRoute.push(...seg);
+        }
+      }
+
+      const pathPoints = resamplePolyline(rawRoute, 360);
+      const totalKm = parseFloat(target.distance) || 4.5;
+
+      // Draw route on map
+      const routePolyline = L.polyline(pathPoints, {
+        color: '#16a34a',
+        weight: 6,
+        opacity: 0.9,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(simLayerGroup);
+
+      // Start Pin Marker
+      const startPin = L.divIcon({
+        className: '',
+        html: `<div class="sim-pin-marker start">📍 Pickup: ${srcName}</div>`,
+        iconAnchor: [30, 26]
+      });
+      L.marker(pathPoints[0], { icon: startPin }).addTo(simLayerGroup);
+
+      // Destination Pin Marker
+      const endPin = L.divIcon({
+        className: '',
+        html: `<div class="sim-pin-marker end">🏁 Drop: ${dstName}</div>`,
+        iconAnchor: [30, 26]
+      });
+      L.marker(pathPoints[pathPoints.length - 1], { icon: endPin }).addTo(simLayerGroup);
+
+      // Moving Vehicle Marker
+      const carIcon = L.divIcon({
+        className: '',
+        html: `<div class="sim-driver-marker" id="movingCarMarker">🚕</div>`,
+        iconSize: [42, 42],
+        iconAnchor: [21, 21]
+      });
+      const driverMarker = L.marker(pathPoints[0], {
+        icon: carIcon,
+        zIndexOffset: 1200
+      }).addTo(simLayerGroup);
+
+      // Fit map around route with comfortable padding
+      simMap.fitBounds(routePolyline.getBounds(), {
+        padding: [50, 50],
+        maxZoom: 15
+      });
+
+      // Run vehicle simulation along route (slow, realistic ~60s street transit)
+      const baseDurationMs = 60000;
+      let progress = 0;
+      let lastTs = null;
+
+      function animateRide(ts) {
+        if (lastTs === null) lastTs = ts;
+        const dt = ts - lastTs;
+        lastTs = ts;
+
+        progress = Math.min(1, progress + (dt * simSpeedMultiplier) / baseDurationMs);
+        const { index: idx, latLng: currentPos } = getInterpolatedLatLng(pathPoints, progress);
+
+        driverMarker.setLatLng(currentPos);
+
+        const remDist = Math.max(0, (totalKm * (1 - progress))).toFixed(1);
+        const remEstMins = Math.max(1, Math.ceil((1 - progress) * totalKm * 2.5));
+
+        document.getElementById('simDistRemaining').textContent = `${remDist} km`;
+        document.getElementById('simEtaRemaining').textContent = `~${remEstMins} mins`;
+        document.getElementById('simProgressFill').style.width = `${Math.round(progress * 100)}%`;
+
+        if (progress < 0.35) {
+          document.getElementById('simNavStatus').textContent = `Driving from ${srcName} along transit corridor...`;
+        } else if (progress < 0.85) {
+          document.getElementById('simNavStatus').textContent = `En route to ${dstName} — cruising steady.`;
+        } else if (progress < 1) {
+          document.getElementById('simNavStatus').textContent = `Approaching ${dstName} drop point...`;
+        }
+
+        if (progress < 1) {
+          simAnimId = requestAnimationFrame(animateRide);
+        } else {
+          // 🎉 DESTINATION REACHED! Enable completion only now.
+          document.getElementById('simNavStatus').textContent = `🎉 Arrived at ${dstName}! Passengers ready to disembark.`;
+          document.getElementById('simDistRemaining').textContent = '0.0 km';
+          document.getElementById('simEtaRemaining').textContent = 'Arrived';
+          document.getElementById('simProgressFill').style.width = '100%';
+
+          finishBtn.disabled = false;
+          finishBtn.classList.add('ready');
+          finishBtn.innerHTML = `<span>🎉 Collect ₹${target.fare} & Finish Ride ✓</span>`;
+
+          lockHint.innerHTML = `
+            <span class="lock-icon" style="color:#166534;">✅</span>
+            <span><strong style="color: #166534;">Destination Reached!</strong> Tap button to collect fare and complete ride.</span>
+          `;
+          showToast(`🏁 Reached ${dstName}! Click "Collect ₹${target.fare} & Finish Ride ✓" to complete trip.`);
+        }
+      }
+
+      simAnimId = requestAnimationFrame(animateRide);
+    }
+
+    function completeActiveRideSimulation() {
+      const finishBtn = document.getElementById('simFinishRideBtn');
+      if (finishBtn.disabled) {
+        showToast('🔒 Ride cannot be finished yet. Please wait until vehicle reaches destination.');
+        return;
+      }
+      if (!activeSimTrip) return;
+
+      const completedId = activeSimTrip.id;
+      completeScheduledRide(completedId);
+
+      // Hide simulation card and clean up
+      if (simAnimId) {
+        cancelAnimationFrame(simAnimId);
+        simAnimId = null;
+      }
+      document.getElementById('activeRideSimulationSection').style.display = 'none';
+      activeSimTrip = null;
     }
 
     function completeScheduledRide(id) {
@@ -575,33 +1114,68 @@
       showToast(`🎉 Ride completed! +₹${target.fare} added to Today's Earnings.`);
     }
 
-    function saveProfile() {
+    async function saveProfile(event) {
+      if (event) event.preventDefault();
       const updatedName = document.getElementById('profileName').value.trim();
-      const updatedSex = document.getElementById('profileSex').value.trim();
+      const updatedEmail = document.getElementById('profileEmail').value.trim();
+      const updatedSex = document.getElementById('profileSex').value;
       const updatedType = document.getElementById('profileVehicleType').value;
       const updatedNo = document.getElementById('profileVehicleNo').value.trim().toUpperCase();
+      const saveBtn = document.getElementById('saveProfileBtn');
 
       if (!updatedName || !updatedNo) {
         showToast('⚠️ Please enter your name and vehicle registration number.');
         return;
       }
 
-      const updatedUser = {
-        ...(currentUser || {}),
-        name: updatedName,
-        sex: updatedSex,
-        vehicleType: updatedType,
-        vehicleNo: updatedNo
-      };
-      sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
 
-      document.getElementById('driverInitials').textContent = getInitials(updatedName);
-      document.getElementById('displayName').textContent = updatedName;
-      document.getElementById('sidebarVehicleChip').textContent = `🚕 ${updatedType} • ${updatedNo}`;
-      document.getElementById('displayVehicleId').textContent = updatedNo;
-      document.getElementById('displayVehicleMeta').textContent = `${updatedType} • Fuel 78%`;
+      try {
+        // Persist changes in users.xlsx when logged in with a registered driver email
+        const res = await fetch('/api/driver/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: updatedEmail,
+            name: updatedName,
+            sex: updatedSex,
+            vehicleType: updatedType,
+            vehicleNo: updatedNo
+          })
+        });
 
-      showToast('✅ Driver profile & vehicle details updated!');
+        if (res.ok) {
+          const data = await res.json();
+          currentUser = { ...(currentUser || {}), ...data.user };
+        } else {
+          currentUser = {
+            ...(currentUser || {}),
+            name: updatedName,
+            email: updatedEmail,
+            sex: updatedSex,
+            vehicleType: updatedType,
+            vehicleNo: updatedNo
+          };
+        }
+      } catch {
+        currentUser = {
+          ...(currentUser || {}),
+          name: updatedName,
+          email: updatedEmail,
+          sex: updatedSex,
+          vehicleType: updatedType,
+          vehicleNo: updatedNo
+        };
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes 💾';
+      }
+
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+      hydrateDriverProfile();
+      toggleProfileEdit(false);
+      showToast('✅ Driver profile & vehicle details saved!');
     }
 
     function scrollToSection(sectionId, clickedBtn) {
