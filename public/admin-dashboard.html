@@ -3,208 +3,1976 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tempo Navigator - Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Tempo Navigator | Transit Administration Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin-dashboard.css">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f6f8fb;
+    /* Inline enhancements for icons, badges and transitions */
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse 1.8s infinite;
     }
-    header {
-      background-color: #ffffff;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #e2e8f0;
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
-    header h1 {
-      color: #124d1d;
-      font-size: 1.5rem;
-      cursor: pointer;
-      margin: 0;
+    .text-truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 170px;
     }
-    nav a {
-      margin: 0 1rem;
-      text-decoration: none;
-      color: #333;
-    }
-    .dashboard {
-      display: flex;
-      padding: 2rem;
-      gap: 2rem;
-    }
-    .sidebar {
-      width: 250px;
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    }
-    .sidebar button,
-    .sidebar a {
-      display: block;
-      width: 100%;
-      margin-top: 1rem;
-      padding: 0.6rem;
-      border-radius: 8px;
-      text-align: left;
-      background: #17612a;
-      color: white;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-    }
-    .content {
-      flex: 1;
-    }
-    .section {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 2rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    }
-    .section h3 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-    .stat-card {
-      background: #f9fafb;
-      padding: 1.5rem;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .stat-card h4 {
-      margin: 0 0 10px 0;
-      color: #666;
-    }
-    .stat-card .value {
-      font-size: 2rem;
+    .badge-count {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 0.7rem;
       font-weight: 700;
-      color: #124d1d;
+      padding: 1px 7px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+    }
+    .nav-item.active .badge-count {
+      background: #166534;
+      color: #ffffff;
+      border-color: #166534;
+    }
+    .dossier-hero {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border-radius: 14px;
+      border: 1px solid #bbf7d0;
+      margin-bottom: 1.25rem;
+    }
+    .dossier-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 16px rgba(22, 101, 52, 0.25);
+      flex-shrink: 0;
+    }
+    .dossier-meta h2 {
+      margin: 0 0 4px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .dossier-meta p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .warning-callout {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #d97706;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .warning-callout-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .warning-callout-body {
+      font-size: 0.84rem;
+      color: #78350f;
+      line-height: 1.4;
+      margin: 0;
+    }
+    .copy-btn {
+      background: #e2e8f0;
+      border: none;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #334155;
+      margin-left: 6px;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+    .table-checkbox {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      accent-color: #166534;
+    }
+    .rating-star {
+      color: #f59e0b;
+      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1 onclick="location.href='login.html'">Tempo Navigator (Admin)</h1>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Manage Users</a>
-      <a href="#">Reports</a>
-    </nav>
-  </header>
 
-  <div class="dashboard">
-    <div class="sidebar">
-      <div style="text-align: center">
-        <div style="font-size: 2rem;">👑</div>
-        <p><strong>Welcome,</strong><br><span id="adminDisplayName">Admin User</span></p>
-        <button onclick="location.href='login.html'">Sign Out</button>
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="admin-topbar">
+    <div class="brand" onclick="switchTab('driversTab')">
+      <div class="brand-icon">🚖</div>
+      <div class="brand-titles">
+        <h1>Tempo Navigator <span style="font-weight: 400; color: #94a3b8;">|</span> Dispatch Admin</h1>
+        <div class="brand-sub">DEHRADUN TRANSIT COMMAND & REGULATORY DESK</div>
       </div>
+      <span class="brand-badge"><span class="pulse-dot"></span> LIVE FLEET</span>
     </div>
 
-    <div class="content">
-      <div class="section">
-        <h3>System Overview</h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h4>Total Drivers</h4>
-            <div class="value" id="driversCount">0</div>
-          </div>
-          <div class="stat-card">
-            <h4>Active Trips</h4>
-            <div class="value">15</div>
-          </div>
-          <div class="stat-card">
-            <h4>Total Passengers</h4>
-            <div class="value" id="passengersCount">0</div>
-          </div>
+    <div class="topbar-actions">
+      <div class="time-pill">
+        <span>⏰</span>
+        <span id="liveTimeClock">Loading time...</span>
+      </div>
+      <button class="btn-primary" onclick="openAddDriverModal()">
+        <span>➕</span> Register Driver
+      </button>
+      <button class="btn-outline" onclick="openAddRouteModal()">
+        <span>🗺️</span> Add Route
+      </button>
+      <button class="btn-signout" onclick="signOut()">
+        <span>🚪</span> Sign Out
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN DASHBOARD CONTAINER ================= -->
+  <div class="dashboard">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="admin-sidebar">
+      <div class="admin-profile-card">
+        <div class="admin-avatar">👑</div>
+        <h3 class="admin-name" id="adminNameDisplay">System Administrator</h3>
+        <p class="admin-email" id="adminEmailDisplay">admin@temponavigator.in</p>
+        <span class="super-badge">Transit Controller • Level 1</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" id="nav-driversTab" onclick="switchTab('driversTab')">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span>🚖</span> <strong>Driver Fleet</strong>
+          </span>
+          <span class="badge-count" id="badgeTotalDrivers">0</span>
+        </button>
+
+        <button class="nav-item" id="nav-maintenanceTab" onclick="switchTab('maintenanceTab')">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span>⚠️</span> <strong>Safety & Service</strong>
+          </span>
+          <span class="badge-count" id="badgeFlaggedDrivers" style="background:#fef3c7; color:#b45309; border-color:#fde68a;">0</span>
+        </button>
+
+        <button class="nav-item" id="nav-routesTab" onclick="switchTab('routesTab')">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span>🗺️</span> <strong>Transit Routes</strong>
+          </span>
+          <span class="badge-count" id="badgeTotalRoutes">0</span>
+        </button>
+
+        <button class="nav-item" id="nav-passengersTab" onclick="switchTab('passengersTab')">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span>👥</span> <strong>Passengers</strong>
+          </span>
+          <span class="badge-count" id="badgeTotalPassengers">0</span>
+        </button>
+
+        <button class="nav-item" id="nav-auditTab" onclick="switchTab('auditTab')">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <span>📜</span> <strong>Dispatch Audit</strong>
+          </span>
+          <span class="badge-count" id="badgeAuditLogs">0</span>
+        </button>
+      </nav>
+
+      <!-- System Connectivity Health Box -->
+      <div class="sidebar-system-card">
+        <div class="system-title">
+          <span>🟢</span> System Operational
+        </div>
+        <div class="system-row">
+          <span>Database File:</span>
+          <strong>users.xlsx</strong>
+        </div>
+        <div class="system-row">
+          <span>Transit Routes:</span>
+          <strong>routes.xlsx</strong>
+        </div>
+        <div class="system-row">
+          <span>Transit Hubs:</span>
+          <strong>18 Terminals</strong>
+        </div>
+        <div class="system-row">
+          <span>Fleet Safety Index:</span>
+          <strong style="color: #16a34a;">99.4%</strong>
         </div>
       </div>
 
-      <!-- Real Registered Users from Database -->
-      <div class="section">
-        <h3>👥 Registered Accounts in Database</h3>
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
-            <thead>
-              <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b;">
-                <th style="padding: 10px;">ID</th>
-                <th style="padding: 10px;">Name</th>
-                <th style="padding: 10px;">Email</th>
-                <th style="padding: 10px;">Role</th>
-                <th style="padding: 10px;">Vehicle / Details</th>
-                <th style="padding: 10px;">Registered</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Loading database records...</td></tr>
-            </tbody>
-          </table>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button class="btn-outline" style="width:100%; justify-content:center; font-size:0.8rem;" onclick="location.href='path.html'">
+          🗺️ Passenger Navigation
+        </button>
+        <button class="btn-outline" style="width:100%; justify-content:center; font-size:0.8rem;" onclick="location.href='driver-home.html'">
+          🚖 Driver Portal View
+        </button>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT AREA ================= -->
+    <main class="content">
+
+      <!-- KPI Overview Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-header">
+            <span>Registered Fleet</span>
+            <span>🚖</span>
+          </div>
+          <div class="kpi-val" id="kpiDriversCount">0</div>
+          <div class="kpi-sub" id="kpiDriversSub">0 Active • 0 Suspended</div>
         </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span>On-Duty Active</span>
+            <span>🟢</span>
+          </div>
+          <div class="kpi-val" id="kpiActiveDriversCount" style="color: #166534;">0</div>
+          <div class="kpi-sub">Authorized for passenger pickup</div>
+        </div>
+
+        <div class="kpi-card warning-card">
+          <div class="kpi-header">
+            <span>Safety Directives</span>
+            <span>⚠️</span>
+          </div>
+          <div class="kpi-val" id="kpiWarnedDriversCount" style="color: #b45309;">0</div>
+          <div class="kpi-sub" id="kpiWarnedSub">0 maintenance / warning alerts</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span>Commuter Accounts</span>
+            <span>👥</span>
+          </div>
+          <div class="kpi-val" id="kpiPassengersCount">0</div>
+          <div class="kpi-sub">Registered transit passengers</div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 1: DRIVER FLEET DIRECTORY ================= -->
+      <section class="tab-pane active" id="driversTab">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">🚖 Driver Fleet Roster & Management</h2>
+              <p class="section-sub">Inspect verified drivers, update registration info, enforce suspensions, or issue safety notices.</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <!-- View Mode Toggle -->
+              <div class="view-toggle-group">
+                <button class="view-toggle-btn active" id="btnViewTable" onclick="toggleDriverView('table')">
+                  <span>📄</span> Table
+                </button>
+                <button class="view-toggle-btn" id="btnViewGrid" onclick="toggleDriverView('grid')">
+                  <span>🎴</span> Cards
+                </button>
+              </div>
+
+              <button class="btn-outline" onclick="exportDriversCSV()">
+                <span>📥</span> Export CSV
+              </button>
+              <button class="btn-primary" onclick="openAddDriverModal()">
+                <span>➕</span> Add Driver
+              </button>
+              <button class="btn-outline" onclick="loadAllData(true)" title="Reload latest records">
+                <span>🔄</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search and Filters Toolbar -->
+          <div class="toolbar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="driverSearchInput" placeholder="Search by Driver Name, Email, Vehicle Plate (e.g. UK-07), or Phone..." oninput="handleDriverSearch()">
+            </div>
+
+            <div class="filter-pills">
+              <button class="filter-pill active" onclick="setDriverFilter('all', this)">All Drivers (<span id="filterCountAll">0</span>)</button>
+              <button class="filter-pill" onclick="setDriverFilter('active', this)">🟢 Active (<span id="filterCountActive">0</span>)</button>
+              <button class="filter-pill" onclick="setDriverFilter('suspended', this)">🔴 Suspended (<span id="filterCountSuspended">0</span>)</button>
+              <button class="filter-pill" onclick="setDriverFilter('warned', this)">⚠️ Flagged / Warning (<span id="filterCountWarned">0</span>)</button>
+            </div>
+
+            <!-- Vehicle Type Select Filter -->
+            <select id="vehicleTypeFilter" onchange="handleDriverSearch()" style="padding: 6px 12px; border-radius: 999px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: 600; color: #334155; background: white; outline: none; cursor: pointer;">
+              <option value="all">All Vehicle Types</option>
+              <option value="Four Seater">Four Seater</option>
+              <option value="Six Seater">Six Seater</option>
+              <option value="Eight Seater">Eight Seater</option>
+              <option value="E-Tempo">E-Tempo</option>
+            </select>
+          </div>
+
+          <!-- Drivers Table Container -->
+          <div id="driversTableView" class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;">#</th>
+                  <th>Driver Details</th>
+                  <th>Vehicle Specifications</th>
+                  <th>Government ID & Sex</th>
+                  <th>Operating Status</th>
+                  <th>Maintenance & Notice</th>
+                  <th>Rating</th>
+                  <th style="text-align: right; padding-right: 1.25rem;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="driversTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                    ⏳ Loading transit drivers from users.xlsx database...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Drivers Cards Grid Container -->
+          <div id="driversGridView" class="driver-cards-grid" style="display: none;">
+            <!-- Generated dynamically in JS -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="driversEmptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">🚖</div>
+            <h3 class="empty-state-title">No Drivers Match Your Filters</h3>
+            <p class="empty-state-sub">Try adjusting your search query, clearing filters, or onboard a new transit driver.</p>
+            <button class="btn-primary" onclick="resetDriverFilters()">Clear All Filters</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: SAFETY & MAINTENANCE HUB ================= -->
+      <section class="tab-pane" id="maintenanceTab">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">⚠️ Vehicle Safety Directives & Maintenance Registry</h2>
+              <p class="section-sub">Track active safety notices, vehicle inspection deadlines, and resolve maintenance compliances.</p>
+            </div>
+            <button class="btn-outline" onclick="loadAllData(true)">
+              <span>🔄</span> Refresh Safety Hub
+            </button>
+          </div>
+
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <strong style="color: #1e40af; font-size: 0.92rem;">🛠️ Fleet Maintenance Enforcement Protocol</strong>
+              <p style="margin: 3px 0 0; color: #3b82f6; font-size: 0.82rem;">Drivers flagged with safety warnings or overdue inspections receive prominent compliance alerts in their driver console upon login.</p>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700; background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 999px;">Standard Cycle: 90 Days</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Driver & Contact</th>
+                  <th>Vehicle & Plate</th>
+                  <th>Active Warning / Directives</th>
+                  <th>Maintenance Deadline</th>
+                  <th>Urgency Status</th>
+                  <th style="text-align: right;">Compliance Resolution</th>
+                </tr>
+              </thead>
+              <tbody id="maintenanceTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                    Loading safety directives...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: TRANSIT ROUTES & NETWORK ================= -->
+      <section class="tab-pane" id="routesTab">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">🗺️ Dehradun Transit Routes & Fare Directory</h2>
+              <p class="section-sub">Configured corridors stored in routes.xlsx powering passenger navigation and fare estimation.</p>
+            </div>
+            <button class="btn-primary" onclick="openAddRouteModal()">
+              <span>➕</span> Add New Corridor
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;">#</th>
+                  <th>Origin Corridor Stop</th>
+                  <th></th>
+                  <th>Destination Terminal</th>
+                  <th>Distance</th>
+                  <th>Estimated Travel Time</th>
+                  <th>Base Fare</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="routesTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                    Loading transit route matrix from routes.xlsx...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: PASSENGERS & USERS REGISTRY ================= -->
+      <section class="tab-pane" id="passengersTab">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">👥 Registered Passenger Commuters</h2>
+              <p class="section-sub">Public user accounts registered for route navigation, fare estimation, and booking.</p>
+            </div>
+            <div class="search-box" style="max-width: 320px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="passengerSearchInput" placeholder="Search passengers by name or email..." oninput="handlePassengerSearch()">
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;">ID</th>
+                  <th>Passenger Name</th>
+                  <th>Registered Email</th>
+                  <th>Phone Number</th>
+                  <th>Account Role</th>
+                  <th>Registration Date</th>
+                  <th style="text-align: right;">Manage</th>
+                </tr>
+              </thead>
+              <tbody id="passengersTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                    Loading passenger database...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: SYSTEM AUDIT & DISPATCH LOG ================= -->
+      <section class="tab-pane" id="auditTab">
+        <div class="section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">📜 Dispatch & Administration Audit Trail</h2>
+              <p class="section-sub">Immutable real-time chronological log of administrative modifications, safety directives, and status shifts.</p>
+            </div>
+            <button class="btn-outline" onclick="clearAuditLogs()">
+              <span>🗑️</span> Clear Local Trail
+            </button>
+          </div>
+
+          <div id="auditLogContainer" class="audit-list">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODAL 1: CHECK DRIVER DETAILS (DOSSIER) ================= -->
+  <div class="modal-backdrop" id="viewDriverModal" onclick="closeOnBackdropClick(event, 'viewDriverModal')">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🚖 Driver Dossier & Verification Record</h3>
+        <button class="modal-close-btn" onclick="closeModal('viewDriverModal')">✕</button>
+      </div>
+
+      <div class="modal-body" id="viewDriverBody">
+        <!-- Rendered dynamically via openViewDriverModal(driver) -->
+      </div>
+
+      <div class="modal-footer" id="viewDriverFooter">
+        <!-- Action buttons rendered dynamically -->
       </div>
     </div>
   </div>
 
+  <!-- ================= MODAL 2: EDIT DRIVER DETAILS ================= -->
+  <div class="modal-backdrop" id="editDriverModal" onclick="closeOnBackdropClick(event, 'editDriverModal')">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Modify Driver & Vehicle Record</h3>
+        <button class="modal-close-btn" onclick="closeModal('editDriverModal')">✕</button>
+      </div>
+
+      <form id="editDriverForm" onsubmit="handleEditDriverSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editDriverEmailHidden">
+
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Full Legal Name</label>
+              <input type="text" id="editDriverName" required placeholder="e.g. Jaspreet Singh">
+            </div>
+
+            <div class="form-field">
+              <label>Contact Email (Primary Key)</label>
+              <input type="email" id="editDriverEmail" disabled style="background:#f1f5f9; cursor:not-allowed; color:#64748b;">
+            </div>
+
+            <div class="form-field">
+              <label>Mobile Number</label>
+              <input type="text" id="editDriverPhone" placeholder="+91 98765 XXXXX">
+            </div>
+
+            <div class="form-field">
+              <label>Gender / Sex</label>
+              <select id="editDriverSex">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Operating Status</label>
+              <select id="editDriverStatus">
+                <option value="Active">🟢 Active (Authorized)</option>
+                <option value="Suspended">🔴 Suspended (Blocked)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Vehicle Seating Type</label>
+              <select id="editDriverVehicleType">
+                <option value="Four Seater">Four Seater (Compact Tempo)</option>
+                <option value="Six Seater">Six Seater (Standard Vikram)</option>
+                <option value="Eight Seater">Eight Seater (Heavy Vikram)</option>
+                <option value="E-Tempo">E-Tempo (Electric Clean)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Registration Plate No.</label>
+              <input type="text" id="editDriverVehicleNo" required placeholder="UK-07-TA-XXXX" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+            </div>
+
+            <div class="form-field full">
+              <label>Government Aadhar Number (12 Digits)</label>
+              <input type="text" id="editDriverAadhar" maxlength="12" placeholder="12-digit UIDAI number" style="font-family:monospace;">
+            </div>
+
+            <div class="form-field full">
+              <label>Next Mandatory Inspection Due</label>
+              <input type="text" id="editDriverMaintenanceDue" placeholder="e.g. Dec 20, 2026">
+            </div>
+
+            <div class="form-field full">
+              <label>Active Warning Notice / Safety Directives (Optional)</label>
+              <textarea id="editDriverWarning" rows="2" placeholder="Leave blank if no safety violation active"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('editDriverModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSubmitEditDriver">Save Changes to users.xlsx</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: WARN DRIVER & ASK FOR MAINTENANCE ================= -->
+  <div class="modal-backdrop" id="warnDriverModal" onclick="closeOnBackdropClick(event, 'warnDriverModal')">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚠️ Issue Safety Warning & Maintenance Notice</h3>
+        <button class="modal-close-btn" onclick="closeModal('warnDriverModal')">✕</button>
+      </div>
+
+      <form id="warnDriverForm" onsubmit="handleWarnDriverSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="warnDriverEmailHidden">
+
+          <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.1rem;">
+            <div style="font-size: 0.82rem; font-weight: 800; color: #92400e;">Target Driver</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a;" id="warnDriverTargetName">Loading driver...</div>
+            <div style="font-size: 0.78rem; color: #78350f;" id="warnDriverTargetEmail">driver@email.com</div>
+          </div>
+
+          <div class="form-field full" style="margin-bottom: 1rem;">
+            <label>Quick Safety Presets</label>
+            <div class="preset-chips-wrap">
+              <span class="preset-chip" onclick="applyWarningPreset('Brake Inspection Required', 'Urgent brake pad wear reported. Schedule hydraulic brake and suspension check immediately.')">🛑 Brake Check</span>
+              <span class="preset-chip" onclick="applyWarningPreset('Speed Limit Directive', 'Excessive speed observed on Clock Tower - Rajpur corridor. Comply with transit 40 km/h ceiling.')">⚡ Speed Directive</span>
+              <span class="preset-chip" onclick="applyWarningPreset('Overcrowding Violation', 'Passenger overcrowding beyond vehicle legal seat capacity detected. Comply with seating policy.')">👥 Overcrowding</span>
+              <span class="preset-chip" onclick="applyWarningPreset('Smoke & Emission Test', 'Pollution emission certificate expired. Complete Green Transit fitness check within 5 days.')">💨 Smoke / Fitness</span>
+              <span class="preset-chip" onclick="applyWarningPreset('Periodic 90-Day Inspection', 'Routine 90-day mechanical servicing and tire tread inspection is due.')">🛠️ 90-Day Service</span>
+            </div>
+          </div>
+
+          <div class="form-field full" style="margin-bottom: 1rem;">
+            <label>Formal Warning Directive / Notice</label>
+            <textarea id="warnDriverMessage" rows="3" required placeholder="Specify regulatory directive or maintenance demand for the driver console..."></textarea>
+          </div>
+
+          <div class="form-field full" style="margin-bottom: 1rem;">
+            <label>Mandatory Maintenance Due Date</label>
+            <input type="text" id="warnDriverDueDate" placeholder="e.g. Nov 25, 2026 or Dec 15, 2026">
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.75rem 1rem;">
+            <div>
+              <strong style="font-size:0.82rem; color:#0f172a;">Clear Active Warning?</strong>
+              <div style="font-size:0.76rem; color:#64748b;">If driver has satisfied all directives and vehicle is serviced.</div>
+            </div>
+            <button type="button" class="act-btn unsuspend" onclick="handleClearWarningFromModal()">
+              ✅ Clear Notice
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('warnDriverModal')">Cancel</button>
+          <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+            ⚠️ Issue Directive to Driver
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 4: ADD NEW DRIVER ================= -->
+  <div class="modal-backdrop" id="addDriverModal" onclick="closeOnBackdropClick(event, 'addDriverModal')">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Register Verified Transit Driver</h3>
+        <button class="modal-close-btn" onclick="closeModal('addDriverModal')">✕</button>
+      </div>
+
+      <form id="addDriverForm" onsubmit="handleAddDriverSubmit(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Driver Full Name *</label>
+              <input type="text" id="addDriverName" required placeholder="e.g. Harpreet Singh">
+            </div>
+
+            <div class="form-field">
+              <label>Official Email Address *</label>
+              <input type="email" id="addDriverEmail" required placeholder="e.g. harpreet@transit.in">
+            </div>
+
+            <div class="form-field">
+              <label>Temporary Account Password *</label>
+              <input type="text" id="addDriverPassword" required value="tempo123" placeholder="tempo123">
+            </div>
+
+            <div class="form-field">
+              <label>Mobile Contact Number</label>
+              <input type="text" id="addDriverPhone" placeholder="+91 98765 XXXXX">
+            </div>
+
+            <div class="form-field">
+              <label>Gender / Sex *</label>
+              <select id="addDriverSex" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Vehicle Seating Type *</label>
+              <select id="addDriverVehicleType" required>
+                <option value="Four Seater">Four Seater (Compact)</option>
+                <option value="Six Seater" selected>Six Seater (Vikram)</option>
+                <option value="Eight Seater">Eight Seater (Heavy)</option>
+                <option value="E-Tempo">E-Tempo (Electric Clean)</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Vehicle License Plate *</label>
+              <input type="text" id="addDriverVehicleNo" required placeholder="UK-07-TA-XXXX" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+            </div>
+
+            <div class="form-field">
+              <label>Government Aadhar Number (12 Digits) *</label>
+              <input type="text" id="addDriverAadhar" maxlength="12" required placeholder="12-digit UIDAI number" style="font-family:monospace;">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('addDriverModal')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSubmitAddDriver">Register & Save in users.xlsx</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 5: ADD TRANSIT ROUTE ================= -->
+  <div class="modal-backdrop" id="addRouteModal" onclick="closeOnBackdropClick(event, 'addRouteModal')">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🗺️ Add Transit Corridor Corridor</h3>
+        <button class="modal-close-btn" onclick="closeModal('addRouteModal')">✕</button>
+      </div>
+
+      <form id="addRouteForm" onsubmit="handleAddRouteSubmit(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Origin Hub *</label>
+              <input type="text" id="addRouteSource" required placeholder="e.g. Clock Tower">
+            </div>
+
+            <div class="form-field">
+              <label>Destination Stop *</label>
+              <input type="text" id="addRouteDestination" required placeholder="e.g. Clement Town">
+            </div>
+
+            <div class="form-field">
+              <label>Distance (km) *</label>
+              <input type="number" step="0.1" id="addRouteDistance" required placeholder="e.g. 5.5">
+            </div>
+
+            <div class="form-field">
+              <label>Estimated Duration</label>
+              <input type="text" id="addRouteDuration" placeholder="e.g. 20 mins">
+            </div>
+
+            <div class="form-field full">
+              <label>Standard Fare (₹)</label>
+              <input type="number" id="addRouteFare" placeholder="e.g. 40">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeModal('addRouteModal')">Cancel</button>
+          <button type="submit" class="btn-primary">Add Route to routes.xlsx</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 6: REUSABLE CONFIRMATION DIALOG ================= -->
+  <div class="modal-backdrop" id="confirmModal">
+    <div class="modal-card confirm-modal-card">
+      <div class="confirm-icon danger" id="confirmIcon">🗑️</div>
+      <h3 class="confirm-title" id="confirmTitle">Confirm Action</h3>
+      <p class="confirm-desc" id="confirmDesc">Are you sure you want to proceed with this operation?</p>
+      <div class="confirm-actions">
+        <button type="button" class="btn-outline" onclick="closeConfirmModal(false)">Cancel</button>
+        <button type="button" class="act-btn danger" id="btnConfirmAction" style="padding: 8px 18px; font-size: 0.9rem;">
+          Yes, Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ================= DASHBOARD CORE LOGIC ================= -->
   <script>
-    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
-    if (currentUser && currentUser.name) {
-      document.getElementById('adminDisplayName').textContent = currentUser.name;
-    }
+    // Global State
+    let allUsers = [];
+    let allDrivers = [];
+    let allPassengers = [];
+    let allRoutes = [];
+    let activeFilter = 'all';
+    let driverSearchQuery = '';
+    let driverViewMode = 'table';
+    let auditLogs = JSON.parse(localStorage.getItem('tempoAdminAuditLogs') || '[]');
+    let confirmResolver = null;
+    let aadharUnmasked = {};
 
-    async function loadDatabaseUsers() {
-      try {
-        const res = await fetch('/api/users');
-        if (!res.ok) return;
-        const users = await res.json();
-        
-        const drivers = users.filter(u => u.role === 'Driver');
-        const passengers = users.filter(u => u.role === 'Passenger');
-        
-        document.getElementById('driversCount').textContent = drivers.length;
-        document.getElementById('passengersCount').textContent = passengers.length;
-
-        const tbody = document.getElementById('usersTableBody');
-        tbody.innerHTML = '';
-        users.forEach(u => {
-          const tr = document.createElement('tr');
-          tr.style.borderBottom = '1px solid #f1f5f9';
-          const roleBadgeColor = u.role === 'Admin' ? '#b91c1c' : (u.role === 'Driver' ? '#15803d' : '#0369a1');
-          const roleBadgeBg = u.role === 'Admin' ? '#fef2f2' : (u.role === 'Driver' ? '#f0fdf4' : '#f0f9ff');
-
-          const detailsText = u.role === 'Driver' && (u.vehicleType || u.vehicleNo || u.sex)
-            ? [u.vehicleType, u.vehicleNo, u.sex].filter(Boolean).join(' • ')
-            : '—';
-
-          tr.innerHTML = `
-            <td style="padding: 10px; color: #64748b;">#${u.id}</td>
-            <td style="padding: 10px; font-weight: 600; color: #1e293b;">${u.name}</td>
-            <td style="padding: 10px; color: #475569;">${u.email}</td>
-            <td style="padding: 10px;">
-              <span style="background:${roleBadgeBg}; color:${roleBadgeColor}; padding: 3px 10px; border-radius: 12px; font-weight: 600; font-size: 12px;">
-                ${u.role}
-              </span>
-            </td>
-            <td style="padding: 10px; color: #475569; font-size: 13px;">${detailsText}</td>
-            <td style="padding: 10px; color: #94a3b8; font-size: 12px;">${new Date(u.timestamp).toLocaleDateString()}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error('Failed to load database users:', err);
+    // Current Authenticated Admin
+    const sessionUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    if (sessionUser && sessionUser.name) {
+      document.getElementById('adminNameDisplay').textContent = sessionUser.name;
+      if (sessionUser.email) {
+        document.getElementById('adminEmailDisplay').textContent = sessionUser.email;
       }
     }
 
-    loadDatabaseUsers();
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      document.getElementById('liveTimeClock').textContent = now.toLocaleTimeString([], options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Show Toast Notification
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'error' ? '❌' : (type === 'warning' ? '⚠️' : (type === 'info' ? 'ℹ️' : '✅'));
+      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px) scale(0.95)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 4000);
+    }
+
+    // Log Activity to Audit Trail
+    function logAudit(action, title, detail) {
+      const entry = {
+        id: Date.now(),
+        action,
+        title,
+        detail,
+        timestamp: new Date().toISOString()
+      };
+      auditLogs.unshift(entry);
+      if (auditLogs.length > 100) auditLogs.pop();
+      localStorage.setItem('tempoAdminAuditLogs', JSON.stringify(auditLogs));
+      renderAuditLogs();
+    }
+
+    function renderAuditLogs() {
+      const container = document.getElementById('auditLogContainer');
+      const badge = document.getElementById('badgeAuditLogs');
+      badge.textContent = auditLogs.length;
+
+      if (!auditLogs.length) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 2rem;">
+            <div class="empty-state-icon">📜</div>
+            <h4 style="margin: 0 0 4px; color: #1e293b;">No Recent Audit Entries</h4>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.82rem;">Administrative activities will be logged in real-time here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = auditLogs.map(item => {
+        let icon = '✏️';
+        let badgeClass = 'edit';
+        if (item.action === 'suspend') { icon = '⛔'; badgeClass = 'suspend'; }
+        else if (item.action === 'activate') { icon = '🟢'; badgeClass = 'activate'; }
+        else if (item.action === 'warn') { icon = '⚠️'; badgeClass = 'warn'; }
+        else if (item.action === 'delete') { icon = '🗑️'; badgeClass = 'delete'; }
+
+        const timeAgo = formatTimeAgo(item.timestamp);
+
+        return `
+          <div class="audit-item">
+            <div class="audit-badge-icon ${badgeClass}">${icon}</div>
+            <div>
+              <h4 class="audit-meta-title">${escapeHtml(item.title)}</h4>
+              <p class="audit-meta-detail">${escapeHtml(item.detail)}</p>
+            </div>
+            <div class="audit-time">${timeAgo}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearAuditLogs() {
+      if (!confirm('Clear all stored dispatch audit history?')) return;
+      auditLogs = [];
+      localStorage.removeItem('tempoAdminAuditLogs');
+      renderAuditLogs();
+      showToast('Audit trail cleared', 'info');
+    }
+
+    function formatTimeAgo(isoString) {
+      const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const targetNav = document.getElementById(`nav-${tabId}`);
+      if (targetNav) targetNav.classList.add('active');
+    }
+
+    // Toggle Driver View (Table vs Cards)
+    function toggleDriverView(mode) {
+      driverViewMode = mode;
+      document.getElementById('btnViewTable').classList.toggle('active', mode === 'table');
+      document.getElementById('btnViewGrid').classList.toggle('active', mode === 'grid');
+      document.getElementById('driversTableView').style.display = mode === 'table' ? 'block' : 'none';
+      document.getElementById('driversGridView').style.display = mode === 'grid' ? 'grid' : 'none';
+    }
+
+    // Load All Data from Backend API
+    async function loadAllData(isManual = false) {
+      try {
+        const [statsRes, driversRes, usersRes, routesRes] = await Promise.all([
+          fetch('/api/admin/stats'),
+          fetch('/api/admin/drivers'),
+          fetch('/api/users'),
+          fetch('/api/routes')
+        ]);
+
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('kpiDriversCount').textContent = stats.totalDrivers || 0;
+          document.getElementById('kpiActiveDriversCount').textContent = stats.activeDrivers || 0;
+          document.getElementById('kpiWarnedDriversCount').textContent = stats.warnedDrivers || 0;
+          document.getElementById('kpiPassengersCount').textContent = stats.totalPassengers || 0;
+          document.getElementById('kpiDriversSub').textContent = `${stats.activeDrivers || 0} Active • ${stats.suspendedDrivers || 0} Suspended`;
+          document.getElementById('kpiWarnedSub').textContent = `${stats.warnedDrivers || 0} with alerts / warnings`;
+          
+          document.getElementById('badgeTotalDrivers').textContent = stats.totalDrivers || 0;
+          document.getElementById('badgeFlaggedDrivers').textContent = stats.warnedDrivers || 0;
+          document.getElementById('badgeTotalPassengers').textContent = stats.totalPassengers || 0;
+        }
+
+        if (driversRes.ok) {
+          allDrivers = await driversRes.json();
+          renderDrivers();
+          renderMaintenanceHub();
+        }
+
+        if (usersRes.ok) {
+          allUsers = await usersRes.json();
+          allPassengers = allUsers.filter(u => u.role && u.role.toLowerCase() === 'passenger');
+          document.getElementById('badgeTotalPassengers').textContent = allPassengers.length;
+          renderPassengers();
+        }
+
+        if (routesRes.ok) {
+          allRoutes = await routesRes.json();
+          document.getElementById('badgeTotalRoutes').textContent = allRoutes.length;
+          renderRoutes();
+        }
+
+        if (isManual) {
+          showToast('Database records synchronized from users.xlsx and routes.xlsx', 'success');
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+        showToast('Error syncing with database server', 'error');
+      }
+    }
+
+    // Set Driver Filter
+    function setDriverFilter(filter, el) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderDrivers();
+    }
+
+    function resetDriverFilters() {
+      activeFilter = 'all';
+      driverSearchQuery = '';
+      document.getElementById('driverSearchInput').value = '';
+      document.getElementById('vehicleTypeFilter').value = 'all';
+      document.querySelectorAll('.filter-pill').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === 0);
+      });
+      renderDrivers();
+    }
+
+    function handleDriverSearch() {
+      driverSearchQuery = document.getElementById('driverSearchInput').value.trim().toLowerCase();
+      renderDrivers();
+    }
+
+    // Get Filtered Drivers
+    function getFilteredDrivers() {
+      const vehicleFilter = document.getElementById('vehicleTypeFilter') ? document.getElementById('vehicleTypeFilter').value : 'all';
+
+      return allDrivers.filter(d => {
+        // Status filter
+        if (activeFilter === 'active' && (d.status || 'Active').toLowerCase() !== 'active') return false;
+        if (activeFilter === 'suspended' && (d.status || '').toLowerCase() !== 'suspended') return false;
+        if (activeFilter === 'warned' && !d.warning && !isMaintenanceNear(d.maintenanceDue)) return false;
+
+        // Vehicle type filter
+        if (vehicleFilter !== 'all' && (d.vehicleType || '').toLowerCase() !== vehicleFilter.toLowerCase()) return false;
+
+        // Search query
+        if (driverSearchQuery) {
+          const matchName = (d.name || '').toLowerCase().includes(driverSearchQuery);
+          const matchEmail = (d.email || '').toLowerCase().includes(driverSearchQuery);
+          const matchPlate = (d.vehicleNo || '').toLowerCase().includes(driverSearchQuery);
+          const matchPhone = (d.phone || '').toLowerCase().includes(driverSearchQuery);
+          if (!matchName && !matchEmail && !matchPlate && !matchPhone) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function isMaintenanceNear(dateStr) {
+      if (!dateStr) return false;
+      return true; // flagged if present
+    }
+
+    // Render Drivers (Table & Card Views)
+    function renderDrivers() {
+      const filtered = getFilteredDrivers();
+      const activeCount = allDrivers.filter(d => (d.status || 'Active').toLowerCase() === 'active').length;
+      const suspendedCount = allDrivers.filter(d => (d.status || '').toLowerCase() === 'suspended').length;
+      const warnedCount = allDrivers.filter(d => Boolean(d.warning)).length;
+
+      document.getElementById('filterCountAll').textContent = allDrivers.length;
+      document.getElementById('filterCountActive').textContent = activeCount;
+      document.getElementById('filterCountSuspended').textContent = suspendedCount;
+      document.getElementById('filterCountWarned').textContent = warnedCount;
+
+      const tbody = document.getElementById('driversTableBody');
+      const grid = document.getElementById('driversGridView');
+      const emptyState = document.getElementById('driversEmptyState');
+
+      if (!filtered.length) {
+        tbody.innerHTML = '';
+        grid.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      emptyState.style.display = 'none';
+
+      // 1. Render Table View
+      tbody.innerHTML = filtered.map((driver, index) => {
+        const isSuspended = (driver.status || '').toLowerCase() === 'suspended';
+        const hasWarning = Boolean(driver.warning);
+        const initials = getInitials(driver.name);
+        const vehiclePlate = driver.vehicleNo || `UK-07-TA-${1000 + driver.id * 137}`;
+        const maskedAadhar = aadharUnmasked[driver.email] 
+          ? driver.aadhar 
+          : (driver.aadhar ? `•••• •••• ${driver.aadhar.slice(-4)}` : 'Not on file');
+
+        const statusBadgeHtml = isSuspended
+          ? `<span class="status-badge suspended">🔴 Suspended</span>`
+          : (hasWarning 
+              ? `<span class="status-badge warning">⚠️ Caution Alert</span>`
+              : `<span class="status-badge active">🟢 Active</span>`);
+
+        const warningChipHtml = hasWarning
+          ? `<span class="warning-flag-chip" title="${escapeHtml(driver.warning)}">⚠️ ${escapeHtml(driver.warning.slice(0, 24))}${driver.warning.length > 24 ? '...' : ''}</span>`
+          : '';
+
+        const suspendBtnHtml = isSuspended
+          ? `<button class="act-btn unsuspend" onclick="toggleDriverStatus('${escapeHtml(driver.email)}', 'Active', '${escapeHtml(driver.name)}')" title="Reactivate driver account">🟢 Reactivate</button>`
+          : `<button class="act-btn suspend" onclick="toggleDriverStatus('${escapeHtml(driver.email)}', 'Suspended', '${escapeHtml(driver.name)}')" title="Suspend driver account">⛔ Suspend</button>`;
+
+        return `
+          <tr>
+            <td style="text-align: center; color: #94a3b8; font-weight: 700; font-size: 0.78rem;">#${driver.id}</td>
+            <td>
+              <div class="driver-user-cell">
+                <div class="driver-mini-avatar" style="${isSuspended ? 'background: #94a3b8;' : ''}">${initials}</div>
+                <div class="driver-user-meta">
+                  <strong class="text-truncate" style="cursor:pointer;" onclick="openViewDriverModal('${escapeHtml(driver.email)}')">${escapeHtml(driver.name)}</strong>
+                  <span class="text-truncate">${escapeHtml(driver.email)}</span>
+                  <span style="font-size:0.72rem; color:#94a3b8;">${escapeHtml(driver.phone || '')}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div>
+                <strong style="color: #0f172a; font-size: 0.85rem;">${escapeHtml(driver.vehicleType || 'Four Seater')}</strong>
+                <div style="margin-top: 4px;">
+                  <span class="plate-badge">${escapeHtml(vehiclePlate)}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="font-size: 0.82rem; color: #334155;">
+                <span>${driver.sex === 'Female' ? '👩 Female' : '👨 Male'}</span>
+                <div style="font-family: monospace; font-size: 0.76rem; color: #64748b; margin-top: 3px;">
+                  ${maskedAadhar}
+                  ${driver.aadhar ? `<button class="copy-btn" onclick="toggleAadhar('${escapeHtml(driver.email)}')">${aadharUnmasked[driver.email] ? 'Hide' : 'Show'}</button>` : ''}
+                </div>
+              </div>
+            </td>
+            <td>${statusBadgeHtml}</td>
+            <td>
+              <div style="font-size: 0.8rem; color: #334155;">
+                <span style="color: #64748b; font-size: 0.74rem;">Due: </span><strong>${escapeHtml(driver.maintenanceDue || 'Dec 20, 2026')}</strong>
+                <div>${warningChipHtml}</div>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:3px; font-weight:700; color:#0f172a; font-size:0.84rem;">
+                <span class="rating-star">★</span> ${escapeHtml(driver.rating || '4.9')}
+              </div>
+            </td>
+            <td style="text-align: right; padding-right: 1.25rem;">
+              <div class="action-btns" style="justify-content: flex-end;">
+                <button class="act-btn view" onclick="openViewDriverModal('${escapeHtml(driver.email)}')" title="View complete dossier">
+                  👁️ Details
+                </button>
+                <button class="act-btn" onclick="openEditDriverModal('${escapeHtml(driver.email)}')" title="Edit profile details">
+                  ✏️ Edit
+                </button>
+                <button class="act-btn warn" onclick="openWarnDriverModal('${escapeHtml(driver.email)}')" title="Issue warning / maintenance notice">
+                  ⚠️ Warn
+                </button>
+                ${suspendBtnHtml}
+                <button class="act-btn danger" onclick="confirmDeleteDriver('${escapeHtml(driver.email)}', '${escapeHtml(driver.name)}')" title="Permanently remove driver">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // 2. Render Cards View
+      grid.innerHTML = filtered.map(driver => {
+        const isSuspended = (driver.status || '').toLowerCase() === 'suspended';
+        const hasWarning = Boolean(driver.warning);
+        const initials = getInitials(driver.name);
+        const vehiclePlate = driver.vehicleNo || `UK-07-TA-${1000 + driver.id * 137}`;
+
+        const statusBadgeHtml = isSuspended
+          ? `<span class="status-badge suspended">🔴 Suspended</span>`
+          : (hasWarning 
+              ? `<span class="status-badge warning">⚠️ Caution Alert</span>`
+              : `<span class="status-badge active">🟢 Active</span>`);
+
+        return `
+          <div class="driver-card">
+            <div>
+              <div class="driver-card-top">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <div class="driver-card-avatar" style="${isSuspended ? 'background:#94a3b8;' : ''}">${initials}</div>
+                  <div>
+                    <h4 class="driver-card-name" onclick="openViewDriverModal('${escapeHtml(driver.email)}')" style="cursor:pointer;">${escapeHtml(driver.name)}</h4>
+                    <p class="driver-card-sub">${escapeHtml(driver.email)}</p>
+                  </div>
+                </div>
+                ${statusBadgeHtml}
+              </div>
+
+              <div class="driver-card-grid-meta">
+                <div>
+                  <span>Vehicle Model</span>
+                  <strong>${escapeHtml(driver.vehicleType || 'Four Seater')}</strong>
+                </div>
+                <div>
+                  <span>Plate Number</span>
+                  <span class="plate-badge" style="font-size:0.72rem;">${escapeHtml(vehiclePlate)}</span>
+                </div>
+                <div>
+                  <span>Mobile</span>
+                  <strong>${escapeHtml(driver.phone || '—')}</strong>
+                </div>
+                <div>
+                  <span>Inspection Due</span>
+                  <strong style="color:${hasWarning ? '#b45309' : '#0f172a'};">${escapeHtml(driver.maintenanceDue || 'Dec 20, 2026')}</strong>
+                </div>
+              </div>
+
+              ${hasWarning ? `
+                <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:6px 9px; font-size:0.75rem; color:#92400e; margin-bottom:8px;">
+                  ⚠️ <strong>Directive:</strong> ${escapeHtml(driver.warning)}
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="driver-card-actions">
+              <button class="act-btn view" style="flex:1;" onclick="openViewDriverModal('${escapeHtml(driver.email)}')">👁️ Details</button>
+              <button class="act-btn" onclick="openEditDriverModal('${escapeHtml(driver.email)}')">✏️ Edit</button>
+              <button class="act-btn warn" onclick="openWarnDriverModal('${escapeHtml(driver.email)}')">⚠️ Warn</button>
+              ${isSuspended
+                ? `<button class="act-btn unsuspend" onclick="toggleDriverStatus('${escapeHtml(driver.email)}', 'Active', '${escapeHtml(driver.name)}')">🟢 Unsuspend</button>`
+                : `<button class="act-btn suspend" onclick="toggleDriverStatus('${escapeHtml(driver.email)}', 'Suspended', '${escapeHtml(driver.name)}')">⛔ Suspend</button>`
+              }
+              <button class="act-btn danger" onclick="confirmDeleteDriver('${escapeHtml(driver.email)}', '${escapeHtml(driver.name)}')">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Safety & Maintenance Hub Tab
+    function renderMaintenanceHub() {
+      const tbody = document.getElementById('maintenanceTableBody');
+      const flagged = allDrivers.filter(d => Boolean(d.warning) || (d.status || '').toLowerCase() === 'suspended');
+
+      if (!flagged.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem 1.5rem; color: #166534;">
+              <div style="font-size: 2.2rem; margin-bottom: 6px;">🎉</div>
+              <strong style="font-size: 1rem;">100% Fleet Safety Compliance</strong>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 0.82rem;">No active safety notices or overdue inspections recorded across all registered drivers.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = flagged.map(driver => {
+        const hasWarning = Boolean(driver.warning);
+        const isSuspended = (driver.status || '').toLowerCase() === 'suspended';
+
+        return `
+          <tr>
+            <td>
+              <strong style="color: #0f172a;">${escapeHtml(driver.name)}</strong>
+              <div style="font-size: 0.76rem; color: #64748b;">${escapeHtml(driver.email)} • ${escapeHtml(driver.phone || '')}</div>
+            </td>
+            <td>
+              <span class="plate-badge">${escapeHtml(driver.vehicleNo || 'UK-07-TA-XXXX')}</span>
+              <div style="font-size: 0.74rem; color: #64748b; margin-top: 3px;">${escapeHtml(driver.vehicleType || 'Four Seater')}</div>
+            </td>
+            <td>
+              ${hasWarning
+                ? `<div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:6px 9px; color:#92400e; font-size:0.8rem; line-height:1.4;">${escapeHtml(driver.warning)}</div>`
+                : `<span style="color:#64748b; font-size:0.8rem;">No formal directive active</span>`
+              }
+            </td>
+            <td>
+              <strong style="color: #b45309; font-size: 0.84rem;">${escapeHtml(driver.maintenanceDue || 'Dec 20, 2026')}</strong>
+            </td>
+            <td>
+              ${isSuspended
+                ? `<span class="status-badge suspended">🔴 Blocked</span>`
+                : `<span class="status-badge warning">⚠️ Caution</span>`
+              }
+            </td>
+            <td style="text-align: right;">
+              <div class="action-btns" style="justify-content: flex-end;">
+                <button class="act-btn unsuspend" onclick="handleQuickClearWarning('${escapeHtml(driver.email)}', '${escapeHtml(driver.name)}')">
+                  ✅ Mark Inspected & Clear
+                </button>
+                <button class="act-btn warn" onclick="openWarnDriverModal('${escapeHtml(driver.email)}')">
+                  ✏️ Update Notice
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Routes Tab
+    function renderRoutes() {
+      const tbody = document.getElementById('routesTableBody');
+      if (!allRoutes.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:#94a3b8;">No transit routes currently configured. Click "Add New Corridor" to create one.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allRoutes.map((r, i) => `
+        <tr>
+          <td style="color:#94a3b8; font-weight:700;">#${r.id || (i + 1)}</td>
+          <td><span class="hub-chip">${escapeHtml(r.source)}</span></td>
+          <td style="text-align:center;"><span class="hub-arrow">➔</span></td>
+          <td><span class="hub-chip">${escapeHtml(r.destination)}</span></td>
+          <td><strong style="color:#0f172a;">${r.distance} km</strong></td>
+          <td style="color:#475569;">⏱️ ${escapeHtml(r.duration || '15 mins')}</td>
+          <td><span class="fare-pill">₹${r.fare || 40}</span></td>
+          <td style="text-align: right;">
+            <button class="act-btn danger" onclick="confirmDeleteRoute('${escapeHtml(r.source)}', '${escapeHtml(r.destination)}')">
+              🗑️ Remove
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Passengers Tab
+    function renderPassengers() {
+      const tbody = document.getElementById('passengersTableBody');
+      const query = (document.getElementById('passengerSearchInput')?.value || '').trim().toLowerCase();
+      
+      const filtered = allPassengers.filter(p => {
+        if (!query) return true;
+        return (p.name || '').toLowerCase().includes(query) || (p.email || '').toLowerCase().includes(query);
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2.5rem; color:#94a3b8;">No passenger accounts found matching search.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr>
+          <td style="color:#94a3b8; font-weight:700;">#${p.id}</td>
+          <td><strong style="color:#0f172a;">${escapeHtml(p.name)}</strong></td>
+          <td style="color:#475569;">${escapeHtml(p.email)}</td>
+          <td style="color:#64748b; font-size:0.8rem;">${escapeHtml(p.phone || 'Not recorded')}</td>
+          <td><span style="background:#f0f9ff; color:#0369a1; padding:2px 8px; border-radius:999px; font-weight:700; font-size:0.74rem;">Passenger</span></td>
+          <td style="color:#94a3b8; font-size:0.8rem;">${new Date(p.timestamp).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' })}</td>
+          <td style="text-align: right;">
+            <button class="act-btn danger" onclick="confirmDeleteUser('${escapeHtml(p.email)}', '${escapeHtml(p.name)}')">
+              🗑️ Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handlePassengerSearch() {
+      renderPassengers();
+    }
+
+    // ================= DRIVER ACTIONS IMPLEMENTATION =================
+
+    // 1. Check Driver Details (Dossier Modal)
+    function openViewDriverModal(email) {
+      const driver = allDrivers.find(d => d.email.toLowerCase() === email.toLowerCase());
+      if (!driver) return;
+
+      const isSuspended = (driver.status || '').toLowerCase() === 'suspended';
+      const hasWarning = Boolean(driver.warning);
+      const initials = getInitials(driver.name);
+      const vehiclePlate = driver.vehicleNo || `UK-07-TA-${1000 + driver.id * 137}`;
+      const unmasked = aadharUnmasked[driver.email];
+      const aadharText = driver.aadhar 
+        ? (unmasked ? driver.aadhar : `•••• •••• ${driver.aadhar.slice(-4)}`) 
+        : 'Not recorded on file';
+
+      const body = document.getElementById('viewDriverBody');
+      body.innerHTML = `
+        <div class="dossier-hero">
+          <div class="dossier-avatar" style="${isSuspended ? 'background:#94a3b8;' : ''}">${initials}</div>
+          <div class="dossier-meta">
+            <h2>${escapeHtml(driver.name)}</h2>
+            <p>${escapeHtml(driver.email)} • Registered Driver</p>
+            <div style="display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;">
+              ${isSuspended 
+                ? '<span class="status-badge suspended">🔴 Suspended by Dispatch</span>' 
+                : '<span class="status-badge active">🟢 Authorized for Active Service</span>'}
+              <span style="font-size:0.75rem; font-weight:700; background:#fff; border:1px solid #cbd5e1; padding:2px 8px; border-radius:999px;">
+                ⭐ ${driver.rating || '4.9'} Star Rating
+              </span>
+            </div>
+          </div>
+        </div>
+
+        ${hasWarning ? `
+          <div class="warning-callout">
+            <div class="warning-callout-title">
+              <span>⚠️</span> ACTIVE SAFETY DIRECTIVE RECORDED
+            </div>
+            <p class="warning-callout-body">${escapeHtml(driver.warning)}</p>
+          </div>
+        ` : ''}
+
+        <div class="dossier-grid">
+          <div class="dossier-tile">
+            <span class="dossier-label">Driver Legal Name</span>
+            <div class="dossier-val">${escapeHtml(driver.name)}</div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Contact Mobile</span>
+            <div class="dossier-val">${escapeHtml(driver.phone || '+91 98765 XXXXX')}</div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Vehicle Seating Classification</span>
+            <div class="dossier-val">${escapeHtml(driver.vehicleType || 'Four Seater')}</div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Registration Plate Number</span>
+            <div class="dossier-val"><span class="plate-badge">${escapeHtml(vehiclePlate)}</span></div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Government UIDAI Aadhar</span>
+            <div class="dossier-val" style="font-family:monospace;">
+              ${aadharText}
+              ${driver.aadhar ? `<button class="copy-btn" onclick="toggleAadharAndRerenderDossier('${escapeHtml(driver.email)}')">${unmasked ? 'Hide' : 'Reveal'}</button>` : ''}
+            </div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Gender / Sex</span>
+            <div class="dossier-val">${escapeHtml(driver.sex || 'Male')}</div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Mandatory Inspection Date</span>
+            <div class="dossier-val" style="color:${hasWarning ? '#b45309' : '#0f172a'};">${escapeHtml(driver.maintenanceDue || 'Dec 20, 2026')}</div>
+          </div>
+
+          <div class="dossier-tile">
+            <span class="dossier-label">Registration Timestamp</span>
+            <div class="dossier-val" style="font-size:0.8rem; color:#64748b;">${new Date(driver.timestamp).toLocaleString()}</div>
+          </div>
+        </div>
+      `;
+
+      const footer = document.getElementById('viewDriverFooter');
+      footer.innerHTML = `
+        <button class="act-btn" onclick="closeModal('viewDriverModal'); openEditDriverModal('${escapeHtml(driver.email)}')">
+          ✏️ Edit Details
+        </button>
+        <button class="act-btn warn" onclick="closeModal('viewDriverModal'); openWarnDriverModal('${escapeHtml(driver.email)}')">
+          ⚠️ Issue Notice
+        </button>
+        ${isSuspended
+          ? `<button class="act-btn unsuspend" onclick="closeModal('viewDriverModal'); toggleDriverStatus('${escapeHtml(driver.email)}', 'Active', '${escapeHtml(driver.name)}')">🟢 Reactivate</button>`
+          : `<button class="act-btn suspend" onclick="closeModal('viewDriverModal'); toggleDriverStatus('${escapeHtml(driver.email)}', 'Suspended', '${escapeHtml(driver.name)}')">⛔ Suspend Driver</button>`
+        }
+        <button class="act-btn danger" onclick="closeModal('viewDriverModal'); confirmDeleteDriver('${escapeHtml(driver.email)}', '${escapeHtml(driver.name)}')">
+          🗑️ Remove Driver
+        </button>
+        <button class="btn-outline" onclick="closeModal('viewDriverModal')">Close</button>
+      `;
+
+      openModal('viewDriverModal');
+    }
+
+    function toggleAadhar(email) {
+      aadharUnmasked[email] = !aadharUnmasked[email];
+      renderDrivers();
+    }
+
+    function toggleAadharAndRerenderDossier(email) {
+      aadharUnmasked[email] = !aadharUnmasked[email];
+      openViewDriverModal(email);
+    }
+
+    // 2. Suspend / Reactivate Driver
+    async function toggleDriverStatus(email, newStatus, driverName) {
+      const isSuspending = newStatus.toLowerCase() === 'suspended';
+      const actionWord = isSuspending ? 'Suspend' : 'Reactivate';
+
+      const confirmed = await showConfirmModal({
+        icon: isSuspending ? '⛔' : '🟢',
+        iconClass: isSuspending ? 'danger' : 'success',
+        title: `${actionWord} Driver "${driverName}"?`,
+        desc: isSuspending
+          ? `Suspending will immediately block driver "${driverName}" (${email}) from logging into the transit driver terminal. Their trips will be paused.`
+          : `Reactivating will restore transit terminal access for "${driverName}" (${email}) and allow them to take active passenger routes.`
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/admin/driver/status', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, status: newStatus })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to update status');
+
+        showToast(data.message, isSuspending ? 'warning' : 'success');
+        logAudit(
+          isSuspending ? 'suspend' : 'activate',
+          `Driver ${actionWord}ed`,
+          `Status of driver "${driverName}" (${email}) was set to "${newStatus}".`
+        );
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // 3. Warn Driver & Ask for Maintenance
+    function openWarnDriverModal(email) {
+      const driver = allDrivers.find(d => d.email.toLowerCase() === email.toLowerCase());
+      if (!driver) return;
+
+      document.getElementById('warnDriverEmailHidden').value = driver.email;
+      document.getElementById('warnDriverTargetName').textContent = driver.name;
+      document.getElementById('warnDriverTargetEmail').textContent = driver.email;
+      document.getElementById('warnDriverMessage').value = driver.warning || '';
+      document.getElementById('warnDriverDueDate').value = driver.maintenanceDue || 'Dec 20, 2026';
+
+      openModal('warnDriverModal');
+    }
+
+    function applyWarningPreset(title, text) {
+      document.getElementById('warnDriverMessage').value = text;
+      // Set due date 7 days from today
+      const due = new Date();
+      due.setDate(due.getDate() + 7);
+      document.getElementById('warnDriverDueDate').value = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    async function handleWarnDriverSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('warnDriverEmailHidden').value;
+      const warning = document.getElementById('warnDriverMessage').value.trim();
+      const maintenanceDue = document.getElementById('warnDriverDueDate').value.trim();
+
+      try {
+        const res = await fetch('/api/admin/driver/warn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, warning, maintenanceDue })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to issue warning');
+
+        closeModal('warnDriverModal');
+        showToast(`Safety directives recorded for driver in users.xlsx`, 'warning');
+        logAudit('warn', 'Safety Warning Issued', `Issued directive to driver ${email}: "${warning.slice(0, 50)}..."`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleClearWarningFromModal() {
+      const email = document.getElementById('warnDriverEmailHidden').value;
+      await clearWarningForDriver(email);
+      closeModal('warnDriverModal');
+    }
+
+    async function handleQuickClearWarning(email, name) {
+      const confirmed = await showConfirmModal({
+        icon: '✅',
+        iconClass: 'success',
+        title: `Clear Warnings for ${name}?`,
+        desc: `This will resolve all active safety directives, reset caution flags, and schedule the next mandatory inspection 90 days forward.`
+      });
+      if (confirmed) {
+        await clearWarningForDriver(email);
+      }
+    }
+
+    async function clearWarningForDriver(email) {
+      try {
+        const res = await fetch('/api/admin/driver/clear-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to clear warning');
+
+        showToast(`Warning resolved and maintenance scheduled forward!`, 'success');
+        logAudit('activate', 'Warning Resolved', `Cleared directives for driver ${email} and updated next inspection date.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // 4. Edit Driver Details
+    function openEditDriverModal(email) {
+      const driver = allDrivers.find(d => d.email.toLowerCase() === email.toLowerCase());
+      if (!driver) return;
+
+      document.getElementById('editDriverEmailHidden').value = driver.email;
+      document.getElementById('editDriverEmail').value = driver.email;
+      document.getElementById('editDriverName').value = driver.name || '';
+      document.getElementById('editDriverPhone').value = driver.phone || '';
+      document.getElementById('editDriverSex').value = driver.sex || 'Male';
+      document.getElementById('editDriverStatus').value = driver.status || 'Active';
+      document.getElementById('editDriverVehicleType').value = driver.vehicleType || 'Four Seater';
+      document.getElementById('editDriverVehicleNo').value = driver.vehicleNo || '';
+      document.getElementById('editDriverAadhar').value = driver.aadhar || '';
+      document.getElementById('editDriverMaintenanceDue').value = driver.maintenanceDue || 'Dec 20, 2026';
+      document.getElementById('editDriverWarning').value = driver.warning || '';
+
+      openModal('editDriverModal');
+    }
+
+    async function handleEditDriverSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('editDriverEmailHidden').value;
+      const name = document.getElementById('editDriverName').value.trim();
+      const phone = document.getElementById('editDriverPhone').value.trim();
+      const sex = document.getElementById('editDriverSex').value;
+      const status = document.getElementById('editDriverStatus').value;
+      const vehicleType = document.getElementById('editDriverVehicleType').value;
+      const vehicleNo = document.getElementById('editDriverVehicleNo').value.trim().toUpperCase();
+      const aadhar = document.getElementById('editDriverAadhar').value.replace(/[\s-]/g, '').trim();
+      const maintenanceDue = document.getElementById('editDriverMaintenanceDue').value.trim();
+      const warning = document.getElementById('editDriverWarning').value.trim();
+
+      if (aadhar && !/^\d{12}$/.test(aadhar)) {
+        showToast('Please enter a valid 12-digit UIDAI Aadhar number', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btnSubmitEditDriver');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving to users.xlsx...';
+
+      try {
+        const res = await fetch('/api/admin/driver/edit', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            name,
+            phone,
+            sex,
+            status,
+            vehicleType,
+            vehicleNo,
+            aadhar,
+            maintenanceDue,
+            warning
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to update driver details');
+
+        closeModal('editDriverModal');
+        showToast('Driver record updated successfully in users.xlsx!', 'success');
+        logAudit('edit', 'Driver Record Updated', `Admin updated details for driver "${name}" (${email}).`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes to users.xlsx';
+      }
+    }
+
+    // 5. Remove a Driver Permanently
+    async function confirmDeleteDriver(email, driverName) {
+      const confirmed = await showConfirmModal({
+        icon: '🗑️',
+        iconClass: 'danger',
+        title: `Permanently Remove "${driverName}"?`,
+        desc: `This will permanently delete the driver account "${driverName}" (${email}) from users.xlsx. This action cannot be undone.`
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/admin/driver', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to remove driver');
+
+        showToast(data.message, 'success');
+        logAudit('delete', 'Driver Removed', `Driver "${driverName}" (${email}) removed permanently from users.xlsx.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // 6. Add / Onboard New Driver
+    function openAddDriverModal() {
+      document.getElementById('addDriverForm').reset();
+      document.getElementById('addDriverPassword').value = 'tempo123';
+      openModal('addDriverModal');
+    }
+
+    async function handleAddDriverSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('addDriverName').value.trim();
+      const email = document.getElementById('addDriverEmail').value.trim();
+      const password = document.getElementById('addDriverPassword').value.trim();
+      const phone = document.getElementById('addDriverPhone').value.trim();
+      const sex = document.getElementById('addDriverSex').value;
+      const vehicleType = document.getElementById('addDriverVehicleType').value;
+      const vehicleNo = document.getElementById('addDriverVehicleNo').value.trim().toUpperCase();
+      const aadhar = document.getElementById('addDriverAadhar').value.replace(/[\s-]/g, '').trim();
+
+      if (!/^\d{12}$/.test(aadhar)) {
+        showToast('Please provide a valid 12-digit Aadhar number', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btnSubmitAddDriver');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering in users.xlsx...';
+
+      try {
+        const res = await fetch('/api/admin/driver/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            phone,
+            sex,
+            vehicleType,
+            vehicleNo,
+            aadhar
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to register driver');
+
+        closeModal('addDriverModal');
+        showToast(data.message, 'success');
+        logAudit('activate', 'Driver Registered', `New driver "${name}" (${email}) onboarded into fleet with vehicle ${vehicleNo}.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register & Save in users.xlsx';
+      }
+    }
+
+    // 7. Route Management Actions
+    function openAddRouteModal() {
+      document.getElementById('addRouteForm').reset();
+      openModal('addRouteModal');
+    }
+
+    async function handleAddRouteSubmit(e) {
+      e.preventDefault();
+      const source = document.getElementById('addRouteSource').value.trim();
+      const destination = document.getElementById('addRouteDestination').value.trim();
+      const distance = document.getElementById('addRouteDistance').value.trim();
+      const duration = document.getElementById('addRouteDuration').value.trim();
+      const fare = document.getElementById('addRouteFare').value.trim();
+
+      try {
+        const res = await fetch('/api/routes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source, destination, distance, duration, fare })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to add route');
+
+        closeModal('addRouteModal');
+        showToast(data.message, 'success');
+        logAudit('activate', 'Route Corridor Added', `Transit route "${source} -> ${destination}" added to routes.xlsx.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function confirmDeleteRoute(source, destination) {
+      const confirmed = await showConfirmModal({
+        icon: '🗺️',
+        iconClass: 'danger',
+        title: `Remove Route "${source} ➔ ${destination}"?`,
+        desc: `Are you sure you want to remove this transit corridor from routes.xlsx? Passengers will no longer be able to estimate or book this corridor.`
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/routes', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source, destination })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to remove route');
+
+        showToast(data.message, 'success');
+        logAudit('delete', 'Route Corridor Removed', `Removed route "${source} ➔ ${destination}" from routes.xlsx.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // 8. Passenger Account Actions
+    async function confirmDeleteUser(email, name) {
+      const confirmed = await showConfirmModal({
+        icon: '🗑️',
+        iconClass: 'danger',
+        title: `Remove Passenger Account "${name}"?`,
+        desc: `This will permanently delete commuter account "${name}" (${email}) from users.xlsx.`
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/admin/user', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to remove user');
+
+        showToast(data.message, 'success');
+        logAudit('delete', 'Passenger Account Removed', `Removed passenger account "${name}" (${email}) from users.xlsx.`);
+        loadAllData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // 9. Export Drivers CSV
+    function exportDriversCSV() {
+      if (!allDrivers.length) {
+        showToast('No driver records to export', 'warning');
+        return;
+      }
+
+      const headers = ['ID', 'Name', 'Email', 'Phone', 'Gender', 'Vehicle Type', 'Vehicle Plate', 'Aadhar', 'Status', 'Rating', 'Inspection Due', 'Active Notice'];
+      const rows = allDrivers.map(d => [
+        d.id,
+        `"${(d.name || '').replace(/"/g, '""')}"`,
+        `"${(d.email || '').replace(/"/g, '""')}"`,
+        `"${(d.phone || '').replace(/"/g, '""')}"`,
+        `"${(d.sex || 'Male').replace(/"/g, '""')}"`,
+        `"${(d.vehicleType || 'Four Seater').replace(/"/g, '""')}"`,
+        `"${(d.vehicleNo || '').replace(/"/g, '""')}"`,
+        `"${(d.aadhar || '').replace(/"/g, '""')}"`,
+        `"${(d.status || 'Active').replace(/"/g, '""')}"`,
+        `"${(d.rating || '4.9').replace(/"/g, '""')}"`,
+        `"${(d.maintenanceDue || '').replace(/"/g, '""')}"`,
+        `"${(d.warning || '').replace(/"/g, '""')}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `tempo_drivers_fleet_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showToast('Driver fleet CSV report generated and downloaded', 'success');
+    }
+
+    // ================= MODAL & CONFIRMATION HELPERS =================
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.add('open');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('open');
+    }
+
+    function closeOnBackdropClick(e, modalId) {
+      if (e.target.id === modalId) closeModal(modalId);
+    }
+
+    // Reusable Promise-based confirmation dialog
+    function showConfirmModal({ icon = '⚠️', iconClass = 'danger', title = 'Confirm Action', desc = 'Are you sure?' }) {
+      return new Promise(resolve => {
+        confirmResolver = resolve;
+        const modal = document.getElementById('confirmModal');
+        const iconEl = document.getElementById('confirmIcon');
+        iconEl.textContent = icon;
+        iconEl.className = `confirm-icon ${iconClass}`;
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmDesc').textContent = desc;
+
+        const confirmBtn = document.getElementById('btnConfirmAction');
+        confirmBtn.onclick = () => {
+          closeModal('confirmModal');
+          resolve(true);
+        };
+
+        openModal('confirmModal');
+      });
+    }
+
+    function closeConfirmModal(result = false) {
+      closeModal('confirmModal');
+      if (confirmResolver) confirmResolver(result);
+    }
+
+    // Keyboard Shortcuts (Esc to close modal, / to focus search)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+        if (confirmResolver) confirmResolver(false);
+      }
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        const search = document.getElementById('driverSearchInput');
+        if (search) search.focus();
+      }
+    });
+
+    // Helper: Escape HTML
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Helper: Get Initials
+    function getInitials(name) {
+      if (!name) return 'D';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    // Sign Out
+    function signOut() {
+      sessionStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+
+    // Initial Load on Page Mount
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAllData();
+      renderAuditLogs();
+    });
   </script>
 </body>
 </html>
