@@ -1,6 +1,19 @@
 const express = require('express');
-const { addUser, authenticateUser, getUserByEmail, getAllUsers, updateUserPassword } = require('./userExcel');
-const { addRoute, findRoute } = require('./routeExcel');
+const {
+    addUser,
+    authenticateUser,
+    getUserByEmail,
+    getAllUsers,
+    getAllDrivers,
+    updateUserPassword,
+    updateDriverProfile,
+    deleteUserByEmail,
+    updateDriverStatus,
+    warnDriver,
+    clearDriverWarning,
+    adminUpdateDriver
+} = require('./userExcel');
+const { getAllRoutes, addRoute, deleteRoute, findRoute } = require('./routeExcel');
 const path = require('path');
 
 const app = express();
@@ -61,6 +74,13 @@ app.post('/api/login', (req, res) => {
         }
         return res.status(401).json({ message: 'Invalid email or password' });
     }
+
+    if (user.Status && user.Status.toLowerCase() === 'suspended') {
+        return res.status(403).json({
+            message: '⚠️ Your account has been suspended by administration. Please contact transit dispatch hub.'
+        });
+    }
+
     res.json({
         message: 'Login successful',
         user: {
@@ -69,7 +89,10 @@ app.post('/api/login', (req, res) => {
             role: user.Role,
             sex: user.Sex || '',
             vehicleType: user.VehicleType || '',
-            vehicleNo: user.VehicleNo || ''
+            vehicleNo: user.VehicleNo || '',
+            status: user.Status || 'Active',
+            warning: user.Warning || '',
+            maintenanceDue: user.MaintenanceDue || 'Dec 20, 2026'
         }
     });
 });
@@ -180,14 +203,230 @@ app.get('/api/drivers', (req, res) => {
     res.json(drivers);
 });
 
-// Add route API
-app.post('/api/add-route', (req, res) => {
-    const { source, destination, distance, duration } = req.body;
+// Update driver profile in users.xlsx
+app.put('/api/driver/profile', (req, res) => {
+    const { email, name, sex, vehicleType, vehicleNo } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Driver email is required' });
+    }
     try {
-        const route = addRoute({ source, destination, distance, duration });
-        res.status(201).json({ message: 'Route added', route });
+        const updatedUser = updateDriverProfile({ email, name, sex, vehicleType, vehicleNo });
+        res.json({ message: 'Driver profile updated in users.xlsx!', user: updatedUser });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// --- Admin Management APIs (users.xlsx) ---
+
+// 1. Get high-level Admin stats & breakdown
+app.get('/api/admin/stats', (req, res) => {
+    try {
+        const users = getAllUsers();
+        const drivers = users.filter(u => u.role && u.role.toLowerCase() === 'driver');
+        const passengers = users.filter(u => u.role && u.role.toLowerCase() === 'passenger');
+        const activeDrivers = drivers.filter(d => (d.status || 'Active').toLowerCase() === 'active');
+        const suspendedDrivers = drivers.filter(d => (d.status || '').toLowerCase() === 'suspended');
+        const warnedDrivers = drivers.filter(d => Boolean(d.warning));
+        const routes = getAllRoutes();
+
+        res.json({
+            totalUsers: users.length,
+            totalDrivers: drivers.length,
+            activeDrivers: activeDrivers.length,
+            suspendedDrivers: suspendedDrivers.length,
+            warnedDrivers: warnedDrivers.length,
+            totalPassengers: passengers.length,
+            totalRoutes: routes.length,
+            activeTrips: 18
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// 1.1 Get all verified driver profiles specifically for Admin console
+app.get('/api/admin/drivers', (req, res) => {
+    try {
+        const drivers = getAllDrivers();
+        res.json(drivers);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// 2. Remove / Delete a driver permanently from users.xlsx
+app.delete('/api/admin/driver', (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Driver email is required' });
+    }
+    try {
+        const removed = deleteUserByEmail(email);
+        res.json({
+            message: `Driver "${removed.name}" (${removed.email}) permanently removed from users.xlsx`,
+            driver: removed
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 2.1 Remove / Delete any user or passenger permanently from users.xlsx
+app.delete('/api/admin/user', (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'User email is required' });
+    }
+    try {
+        const removed = deleteUserByEmail(email);
+        res.json({
+            message: `User account "${removed.name}" (${removed.email}) removed from users.xlsx`,
+            user: removed
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 3. Suspend or Reactivate a driver
+app.put('/api/admin/driver/status', (req, res) => {
+    const { email, status } = req.body;
+    if (!email || !status) {
+        return res.status(400).json({ message: 'Driver email and status (Active / Suspended) are required' });
+    }
+    try {
+        const result = updateDriverStatus(email, status);
+        res.json({
+            message: `Driver status changed to "${status}" in users.xlsx`,
+            driver: result
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 4. Issue a formal warning and/or set maintenance request
+app.post('/api/admin/driver/warn', (req, res) => {
+    const { email, warning, maintenanceDue } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Driver email is required' });
+    }
+    try {
+        const result = warnDriver(email, warning, maintenanceDue);
+        res.json({
+            message: `Notice & safety directives recorded for driver in users.xlsx`,
+            driver: result
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 4.1 Clear warning and mark maintenance completed
+app.post('/api/admin/driver/clear-warning', (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Driver email is required' });
+    }
+    try {
+        const result = clearDriverWarning(email);
+        res.json({
+            message: `Warning resolved and maintenance scheduled forward for driver in users.xlsx`,
+            driver: result
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 5. Edit driver details (Name, Sex, Vehicle Type, Vehicle No, Aadhar, Phone, Rating, Status, Warning, Maintenance)
+app.put('/api/admin/driver/edit', (req, res) => {
+    const { email, name, sex, vehicleType, vehicleNo, aadhar, phone, rating, status, warning, maintenanceDue } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Driver email is required' });
+    }
+    try {
+        const updated = adminUpdateDriver(email, {
+            name,
+            sex,
+            vehicleType,
+            vehicleNo,
+            aadhar,
+            phone,
+            rating,
+            status,
+            warning,
+            maintenanceDue
+        });
+        res.json({
+            message: `Driver details updated successfully in users.xlsx!`,
+            driver: updated
+        });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
+    }
+});
+
+// 6. Admin directly registers a new verified driver
+app.post('/api/admin/driver/add', (req, res) => {
+    const { name, email, password, sex, aadhar, vehicleType, vehicleNo, phone } = req.body;
+    try {
+        const newDriver = addUser({
+            name,
+            email,
+            password: password || 'tempo123',
+            role: 'Driver',
+            sex,
+            aadhar,
+            vehicleType,
+            vehicleNo,
+            phone
+        });
+        res.status(201).json({
+            message: `Driver account "${newDriver.Name}" registered and saved in users.xlsx!`,
+            driver: newDriver
+        });
+    } catch (err) {
+        const statusCode = err.statusCode || 400;
+        res.status(statusCode).json({ message: err.message });
+    }
+});
+
+// --- Route Management APIs (routes.xlsx) ---
+
+// Get all transit routes
+app.get('/api/routes', (req, res) => {
+    try {
+        const routes = getAllRoutes();
+        res.json(routes);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Add route API
+app.post(['/api/add-route', '/api/routes'], (req, res) => {
+    const { source, destination, distance, duration, fare } = req.body;
+    try {
+        const route = addRoute({ source, destination, distance, duration, fare });
+        res.status(201).json({ message: 'Route added successfully to routes.xlsx', route });
     } catch (err) {
         res.status(409).json({ message: err.message });
+    }
+});
+
+// Delete route API
+app.delete('/api/routes', (req, res) => {
+    const { source, destination } = req.body;
+    if (!source || !destination) {
+        return res.status(400).json({ message: 'Source and destination are required' });
+    }
+    try {
+        const removed = deleteRoute(source, destination);
+        res.json({ message: `Route "${source} -> ${destination}" removed from routes.xlsx`, route: removed });
+    } catch (err) {
+        res.status(404).json({ message: err.message });
     }
 });
 
