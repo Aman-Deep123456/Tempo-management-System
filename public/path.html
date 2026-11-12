@@ -3,145 +3,1182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tempo Navigator - Live Route & Rider Tracking</title>
+
+  <!-- Leaflet Map CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
   <link rel="stylesheet" href="path.css" />
-  <title>Route Finder</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-
-    main {
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    .route-finder {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .input-field label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .input-field input {
-      padding: 12px;
-      font-size: 1rem;
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    .btn-group {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    .btn-group button {
-      padding: 12px 24px;
-      font-size: 1rem;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      min-width: 160px;
-    }
-
-    .btn-group button:hover {
-      background-color: #45a049;
-    }
-
-    #route-result {
-      margin-top: 30px;
-      background-color: #f0f0f0;
-      padding: 20px;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      line-height: 1.6;
-    }
-
-    #comparison-results {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    #floydwarshall-result,
-    #astar-result {
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
-    }
-
-    @media (min-width: 700px) {
-      #comparison-results {
-        flex-direction: row;
-        justify-content: space-between;
-      }
-
-      #floydwarshall-result,
-      #astar-result {
-        width: 48%;
-      }
-    }
-  </style>
 </head>
 <body>
-  <main>
-    <h1>🗺️ Route Comparison Tool</h1>
-    <section class="route-finder">
-      <h2>Find the Best Route</h2>
 
-      <div class="input-group">
-        <div class="input-field">
-          <label for="source">Source</label>
-          <input type="text" id="source" placeholder="Enter starting location" list="places" />
-        </div>
-        <div class="input-field">
-          <label for="destination">Destination</label>
-          <input type="text" id="destination" placeholder="Enter destination" list="places" />
-        </div>
-      </div>
+  <!-- Full-Screen Background Map -->
+  <div id="map"></div>
 
-      <div class="btn-group">
-        <button id="compare-btn">Find Route</button>
-      </div>
+  <!-- Live GPS Status Pill (Top Right) -->
+  <div class="live-gps-pill" id="gpsStatusPill">
+    <span class="gps-dot" id="gpsDot"></span>
+    <span id="gpsStatusText">Locating live position...</span>
+  </div>
 
-      <div id="route-result">
-        <div id="comparison-results">
-          <div id="floydwarshall-result"></div>
-          <div id="astar-result"></div>
+  <!-- Top-Left Floating Route & Driver Panel -->
+  <aside class="top-left-panel" id="topLeftPanel">
+    <div class="panel-header">
+      <div class="brand-wrap">
+        <div class="brand-logo">🚕</div>
+        <div>
+          <h1 class="brand-title">Tempo Navigator</h1>
+          <p class="brand-sub" id="passengerGreeting">Find route &amp; live drivers nearby</p>
         </div>
       </div>
-    </section>
-  </main>
+      <div class="panel-header-actions">
+        <button type="button" class="icon-btn" id="togglePanelBtn" title="Minimize/Expand panel">▾</button>
+        <button type="button" class="icon-btn" onclick="window.location.href='login.html'" title="Logout">Logout</button>
+      </div>
+    </div>
+
+    <div class="panel-scroll-body">
+      <!-- Starting Point & Destination Inputs -->
+      <div class="route-form-card">
+        <div class="location-row">
+          <span class="loc-dot start"></span>
+          <div class="input-wrap">
+            <input
+              type="text"
+              id="source"
+              placeholder="Starting point (or use live location)"
+              list="places"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              class="inline-action-btn"
+              id="useLiveLocationBtn"
+              title="Use My Live Location"
+            >📍</button>
+          </div>
+        </div>
+
+        <div class="location-row">
+          <span class="loc-dot end"></span>
+          <div class="input-wrap">
+            <input
+              type="text"
+              id="destination"
+              placeholder="Enter destination (e.g. ISBT, Rajpur Road)"
+              list="places"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              class="inline-action-btn"
+              id="swapLocationsBtn"
+              title="Swap Starting Point & Destination"
+            >⇅</button>
+          </div>
+        </div>
+
+        <!-- Quick Dehradun Hub Chips -->
+        <div class="quick-hubs" id="quickHubChips">
+          <button type="button" class="hub-chip" data-hub="My Live Location">📍 My Location</button>
+          <button type="button" class="hub-chip" data-hub="Clock Tower">Clock Tower</button>
+          <button type="button" class="hub-chip" data-hub="ISBT">ISBT</button>
+          <button type="button" class="hub-chip" data-hub="Rajpur Road">Rajpur Road</button>
+          <button type="button" class="hub-chip" data-hub="Prem Nagar">Prem Nagar</button>
+          <button type="button" class="hub-chip" data-hub="Paltan Bazaar">Paltan Bazaar</button>
+        </div>
+
+        <button type="button" id="compare-btn" class="primary-btn">
+          Find Best Route &amp; Drivers →
+        </button>
+      </div>
+
+      <!-- Validation / Status Alert -->
+      <div id="panelAlert" class="panel-alert"></div>
+
+      <!-- Route Summary & Google Maps Action -->
+      <section id="routeSummarySection" class="route-summary-card" style="display: none;">
+        <div class="trip-route-meta">
+          <span id="tripRouteLabel">Route ready</span>
+          <span class="trip-route-stats" id="bestRouteTag"></span>
+        </div>
+        <button type="button" id="open-maps" class="maps-link-btn">Open Route in Google Maps ↗</button>
+      </section>
+
+      <!-- Available Drivers List -->
+      <section id="driversSection" class="drivers-section" style="display: none;">
+        <div class="section-heading">
+          <h3>🚕 Available Drivers Nearby</h3>
+          <span class="drivers-count-badge" id="driversCountBadge">0 online</span>
+        </div>
+        <div class="drivers-list" id="driversList"></div>
+      </section>
+
+      <!-- Zomato-Style Live Rider Approaching Simulation Card -->
+      <section id="trackingSection" class="tracking-card" style="display: none;">
+        <div class="tracking-top">
+          <span class="tracking-badge" id="trackingBadge">🟢 Rider on the way</span>
+          <span class="tracking-eta-big" id="trackingEtaText">2 min</span>
+        </div>
+
+        <p class="tracking-status-text" id="trackingStatusText">
+          Driver is approaching your location...
+        </p>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="trackingProgressFill"></div>
+        </div>
+
+        <div class="tracking-driver-summary">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a;" id="trackingDriverName">Driver</div>
+            <div style="font-size: 11.5px; color: #475569; margin-top: 2px;" id="trackingVehicleInfo">Vehicle</div>
+            <div style="font-size: 11px; color: #166534; font-weight: 600; margin-top: 2px;" id="trackingDistanceRemaining">-- m away</div>
+          </div>
+          <div class="ride-pin-box">
+            <div class="ride-pin-label">Ride PIN</div>
+            <div class="ride-pin-code" id="trackingRidePin">4829</div>
+          </div>
+        </div>
+
+        <div class="tracking-actions">
+          <button type="button" class="secondary-btn" id="backToDriversBtn">← Drivers</button>
+          <button type="button" class="secondary-btn" id="speedToggleBtn">⚡ 2x Speed</button>
+          <button type="button" class="primary-btn" id="startTripBtn" style="display: none; flex: 1.4; padding: 8px 10px; font-size: 12.5px;">
+            Start Trip →
+          </button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Floating Bottom-Left Past Trips Button & Drawer -->
+  <button type="button" class="past-trips-trigger" id="pastTripsBtn">
+    <span>🕘 Past Trips</span>
+    <span class="past-trips-count" id="pastTripsCount">4</span>
+  </button>
+
+  <section class="past-trips-drawer" id="pastTripsDrawer" aria-label="Past Trips">
+    <div class="past-trips-header">
+      <h3>🕘 Past Trips History</h3>
+      <button type="button" class="icon-btn" id="closePastTripsBtn" aria-label="Close past trips">✕</button>
+    </div>
+    <div class="past-trips-body" id="pastTripsList"></div>
+  </section>
+
+  <!-- Floating Bottom-Right Map Actions -->
+  <div class="map-controls-br">
+    <button type="button" class="map-fab" id="recenterBtn" title="Center map on my live location">
+      📍 My Live Location
+    </button>
+  </div>
 
   <datalist id="places"></datalist>
 
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="Route.js"></script>
+  <script>
+    (function () {
+      const DEHRADUN_FALLBACK = [30.3244, 78.0339]; // Clock Tower fallback if GPS denied
+      const {
+        places,
+        coordinates,
+        priceMultiplier,
+        haversineDistance,
+        resolveCanonicalPlace,
+        findNearestHub,
+        getFloydPath,
+        getAStarPath
+      } = window.TempoRouter;
+
+      // Greet logged-in user if present
+      const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+      if (currentUser && currentUser.name) {
+        document.getElementById('passengerGreeting').textContent = `Hi ${currentUser.name} • Live Map`;
+      }
+
+      // Populate autocomplete datalist with Live Location + Dehradun hubs
+      const datalist = document.getElementById('places');
+      const liveOpt = document.createElement('option');
+      liveOpt.value = 'My Live Location';
+      datalist.appendChild(liveOpt);
+      places.forEach(place => {
+        const option = document.createElement('option');
+        option.value = place;
+        datalist.appendChild(option);
+      });
+
+      // State
+      let map = null;
+      let userLiveCoords = [...DEHRADUN_FALLBACK];
+      let hasRealGps = false;
+      let userLiveMarker = null;
+      let routeLayerGroup = null;
+      let idleDriversLayerGroup = null;
+      let simulationLayerGroup = null;
+
+      let activeRouteData = null; // { pathCoords, pathNames, distanceKm, fareRs, timeMin, pickupCoords, dropCoords, pickupLabel, dropLabel }
+      let loadedDrivers = [];
+      let selectedDriver = null;
+      let animFrameId = null;
+      let simulationSpeedMultiplier = 1;
+
+      // Initialize Leaflet Full-Screen Map
+      function initMap() {
+        if (typeof L === 'undefined') {
+          showAlert('Map library could not load. Please check internet connection.', 'error');
+          return;
+        }
+
+        map = L.map('map', {
+          center: DEHRADUN_FALLBACK,
+          zoom: 14,
+          zoomControl: false
+        });
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        routeLayerGroup = L.layerGroup().addTo(map);
+        idleDriversLayerGroup = L.layerGroup().addTo(map);
+        simulationLayerGroup = L.layerGroup().addTo(map);
+
+        placeOrUpdateUserLiveMarker(DEHRADUN_FALLBACK, false);
+        requestLiveGeolocation();
+      }
+
+      function placeOrUpdateUserLiveMarker(coords, isReal) {
+        if (!map) return;
+        const icon = L.divIcon({
+          className: '',
+          html: '<div class="user-live-marker"><div class="user-live-halo"></div><div class="user-live-core"></div></div>',
+          iconSize: [22, 22],
+          iconAnchor: [11, 11]
+        });
+
+        if (userLiveMarker) {
+          userLiveMarker.setLatLng(coords);
+        } else {
+          userLiveMarker = L.marker(coords, { icon, zIndexOffset: 900 }).addTo(map);
+        }
+
+        userLiveMarker.bindPopup(
+          isReal
+            ? '<strong>📍 Your Live Location</strong><br/>GPS active'
+            : '<strong>📍 Default Location (Clock Tower)</strong><br/>Enable GPS for live position'
+        );
+      }
+
+      function requestLiveGeolocation() {
+        const gpsDot = document.getElementById('gpsDot');
+        const gpsText = document.getElementById('gpsStatusText');
+
+        if (!('geolocation' in navigator)) {
+          gpsDot.classList.add('fallback');
+          gpsText.textContent = 'Demo GPS: Clock Tower, Dehradun';
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            hasRealGps = true;
+            userLiveCoords = [pos.coords.latitude, pos.coords.longitude];
+            gpsDot.classList.remove('fallback');
+            gpsText.textContent = `Live GPS (${userLiveCoords[0].toFixed(4)}, ${userLiveCoords[1].toFixed(4)})`;
+            placeOrUpdateUserLiveMarker(userLiveCoords, true);
+            map.flyTo(userLiveCoords, 15, { duration: 1.1 });
+
+            // Default starting point to user's live location if empty
+            const sourceInput = document.getElementById('source');
+            if (!sourceInput.value.trim()) {
+              sourceInput.value = 'My Live Location';
+            }
+          },
+          () => {
+            hasRealGps = false;
+            userLiveCoords = [...DEHRADUN_FALLBACK];
+            gpsDot.classList.add('fallback');
+            gpsText.textContent = 'Demo GPS: Clock Tower, Dehradun';
+            placeOrUpdateUserLiveMarker(userLiveCoords, false);
+          },
+          { enableHighAccuracy: true, timeout: 7000, maximumAge: 15000 }
+        );
+
+        // Live updates as user moves
+        navigator.geolocation.watchPosition(
+          pos => {
+            hasRealGps = true;
+            userLiveCoords = [pos.coords.latitude, pos.coords.longitude];
+            gpsDot.classList.remove('fallback');
+            gpsText.textContent = `Live GPS (${userLiveCoords[0].toFixed(4)}, ${userLiveCoords[1].toFixed(4)})`;
+            placeOrUpdateUserLiveMarker(userLiveCoords, true);
+          },
+          () => {},
+          { enableHighAccuracy: true, maximumAge: 15000 }
+        );
+      }
+
+      // Panel Alert Helpers
+      function showAlert(msg, type = 'error') {
+        const box = document.getElementById('panelAlert');
+        box.className = `panel-alert ${type}`;
+        box.textContent = msg;
+      }
+
+      function clearAlert() {
+        const box = document.getElementById('panelAlert');
+        box.className = 'panel-alert';
+        box.textContent = '';
+      }
+
+      // Geocode custom location fallback via Nominatim
+      async function geocodeCustomPlace(query) {
+        try {
+          const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+            query + ', Dehradun, India'
+          )}`;
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 2500);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data && data.length > 0) {
+            return {
+              label: query,
+              coords: [parseFloat(data[0].lat), parseFloat(data[0].lon)]
+            };
+          }
+          return null;
+        } catch {
+          return null;
+        }
+      }
+
+      // Fetch road geometry via OSRM if available, otherwise return input waypoints
+      async function fetchRoadPolyline(waypoints) {
+        if (!waypoints || waypoints.length < 2) return waypoints;
+        try {
+          const coordStr = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
+          const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 2200);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          if (!res.ok) return waypoints;
+          const data = await res.json();
+          if (data.routes && data.routes[0] && data.routes[0].geometry) {
+            return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+          }
+        } catch {
+          // Offline or timeout fallback
+        }
+        return waypoints;
+      }
+
+      // Generate smooth curved road-like intermediate points when OSRM is unavailable
+      function buildCurvedApproachPath(startCoord, endCoord, segments = 40) {
+        const [lat1, lng1] = startCoord;
+        const [lat2, lng2] = endCoord;
+        const dLat = lat2 - lat1;
+        const dLng = lng2 - lng1;
+        // Perpendicular offset for natural street turn
+        const midLat = (lat1 + lat2) / 2 + dLng * 0.18;
+        const midLng = (lng1 + lng2) / 2 - dLat * 0.18;
+
+        const pts = [];
+        for (let i = 0; i <= segments; i++) {
+          const t = i / segments;
+          // Quadratic Bezier interpolation
+          const lat = (1 - t) * (1 - t) * lat1 + 2 * (1 - t) * t * midLat + t * t * lat2;
+          const lng = (1 - t) * (1 - t) * lng1 + 2 * (1 - t) * t * midLng + t * t * lng2;
+          pts.push([lat, lng]);
+        }
+        return pts;
+      }
+
+      // Subdivide a polyline into evenly spaced points for silky-smooth animation
+      function resamplePolyline(points, totalSteps = 220) {
+        if (points.length < 2) return points;
+        const segLengths = [];
+        let totalLen = 0;
+        for (let i = 0; i < points.length - 1; i++) {
+          const d = haversineDistance(points[i], points[i + 1]);
+          segLengths.push(d);
+          totalLen += d;
+        }
+        if (totalLen === 0) return points;
+
+        const resampled = [];
+        for (let s = 0; s <= totalSteps; s++) {
+          const targetDist = (s / totalSteps) * totalLen;
+          let acc = 0;
+          let placed = false;
+          for (let i = 0; i < segLengths.length; i++) {
+            const seg = segLengths[i];
+            if (acc + seg >= targetDist || i === segLengths.length - 1) {
+              const ratio = seg > 0 ? Math.min(1, Math.max(0, (targetDist - acc) / seg)) : 0;
+              const lat = points[i][0] + (points[i + 1][0] - points[i][0]) * ratio;
+              const lng = points[i][1] + (points[i + 1][1] - points[i][1]) * ratio;
+              resampled.push([lat, lng]);
+              placed = true;
+              break;
+            }
+            acc += seg;
+          }
+          if (!placed) resampled.push(points[points.length - 1]);
+        }
+        return resampled;
+      }
+
+      // Smooth sub-segment interpolation for slow 60fps vehicle gliding
+      function getInterpolatedLatLng(points, prog) {
+        if (!points || points.length === 0) return { index: 0, latLng: [0, 0] };
+        if (points.length === 1) return { index: 0, latLng: points[0] };
+        const exact = prog * (points.length - 1);
+        const i = Math.min(points.length - 2, Math.floor(exact));
+        const frac = exact - i;
+        const p0 = points[i];
+        const p1 = points[i + 1] || p0;
+        return {
+          index: i,
+          latLng: [p0[0] + (p1[0] - p0[0]) * frac, p0[1] + (p1[1] - p0[1]) * frac]
+        };
+      }
+
+      // Resolve route for Starting Point & Destination
+      async function resolveRoute(srcRaw, dstRaw) {
+        const isLiveSrc = srcRaw.toLowerCase() === 'my live location';
+        const isLiveDst = dstRaw.toLowerCase() === 'my live location';
+
+        if (isLiveSrc && isLiveDst) {
+          throw new Error('Starting point and destination cannot both be your live location.');
+        }
+
+        const srcHub = isLiveSrc ? null : resolveCanonicalPlace(srcRaw);
+        const dstHub = isLiveDst ? null : resolveCanonicalPlace(dstRaw);
+
+        // Case 1: Both are Dehradun hubs -> full Floyd-Warshall + A* comparison
+        if (srcHub && dstHub) {
+          if (srcHub === dstHub) {
+            throw new Error('Please choose two different locations.');
+          }
+          const fw = getFloydPath(srcHub, dstHub);
+          const astar = getAStarPath(srcHub, dstHub);
+          if (!fw || !astar) {
+            throw new Error('No route found between these hubs.');
+          }
+          const best = fw.distance <= astar.distance ? fw : astar;
+          const waypoints = best.path.map(name => coordinates[name]);
+          const roadCoords = await fetchRoadPolyline(waypoints);
+
+          return {
+            mode: 'hubs',
+            fw,
+            astar,
+            pathNames: best.path,
+            roadCoords,
+            pickupCoords: coordinates[srcHub],
+            dropCoords: coordinates[dstHub],
+            pickupLabel: srcHub,
+            dropLabel: dstHub,
+            distanceKm: best.distance
+          };
+        }
+
+        // Case 2: Live location -> Hub or Hub -> Live location
+        if ((isLiveSrc && dstHub) || (srcHub && isLiveDst)) {
+          const targetHub = isLiveSrc ? dstHub : srcHub;
+          const near = findNearestHub(userLiveCoords);
+
+          // If user's real GPS is within 35 km of Dehradun, connect into the hub graph
+          if (near.distanceKm <= 35) {
+            const hubPath =
+              near.hub === targetHub
+                ? { path: [targetHub], distance: 0 }
+                : getFloydPath(near.hub, targetHub);
+
+            const fwPathNames = isLiveSrc
+              ? ['My Live Location', ...hubPath.path]
+              : [...hubPath.path.slice().reverse(), 'My Live Location'];
+            const totalDist = Number((near.distanceKm + hubPath.distance).toFixed(2));
+            const fw = { path: fwPathNames, distance: totalDist };
+            const astar = { path: fwPathNames, distance: totalDist };
+
+            const waypoints = isLiveSrc
+              ? [userLiveCoords, ...hubPath.path.map(p => coordinates[p])]
+              : [...hubPath.path.slice().reverse().map(p => coordinates[p]), userLiveCoords];
+            const roadCoords = await fetchRoadPolyline(waypoints);
+
+            return {
+              mode: 'live-hub',
+              fw,
+              astar,
+              pathNames: fwPathNames,
+              roadCoords,
+              pickupCoords: isLiveSrc ? userLiveCoords : coordinates[srcHub],
+              dropCoords: isLiveDst ? userLiveCoords : coordinates[dstHub],
+              pickupLabel: isLiveSrc ? 'My Live Location' : srcHub,
+              dropLabel: isLiveDst ? 'My Live Location' : dstHub,
+              distanceKm: totalDist
+            };
+          }
+
+          // If GPS is far outside Dehradun, route directly between live location & destination OR warn gracefully
+          const pickupCoords = isLiveSrc ? userLiveCoords : coordinates[srcHub];
+          const dropCoords = isLiveDst ? userLiveCoords : coordinates[dstHub];
+          const directKm = Number(haversineDistance(pickupCoords, dropCoords).toFixed(2));
+          const roadCoords = await fetchRoadPolyline([pickupCoords, dropCoords]);
+          const pathNames = [isLiveSrc ? 'My Live Location' : srcHub, isLiveDst ? 'My Live Location' : dstHub];
+
+          return {
+            mode: 'direct',
+            fw: { path: pathNames, distance: directKm },
+            astar: { path: pathNames, distance: directKm },
+            pathNames,
+            roadCoords,
+            pickupCoords,
+            dropCoords,
+            pickupLabel: pathNames[0],
+            dropLabel: pathNames[1],
+            distanceKm: directKm
+          };
+        }
+
+        // Case 3: Custom place names -> Geocode via Nominatim + OSRM
+        const startResolved = isLiveSrc
+          ? { label: 'My Live Location', coords: userLiveCoords }
+          : srcHub
+          ? { label: srcHub, coords: coordinates[srcHub] }
+          : await geocodeCustomPlace(srcRaw);
+
+        const endResolved = isLiveDst
+          ? { label: 'My Live Location', coords: userLiveCoords }
+          : dstHub
+          ? { label: dstHub, coords: coordinates[dstHub] }
+          : await geocodeCustomPlace(dstRaw);
+
+        if (!startResolved || !endResolved) {
+          throw new Error(
+            `Location not recognized. Try "My Live Location" or Dehradun hubs: ${places.slice(0, 6).join(', ')}...`
+          );
+        }
+
+        const directKm = Number(haversineDistance(startResolved.coords, endResolved.coords).toFixed(2));
+        const roadCoords = await fetchRoadPolyline([startResolved.coords, endResolved.coords]);
+        const pathNames = [startResolved.label, endResolved.label];
+
+        return {
+          mode: 'custom',
+          fw: { path: pathNames, distance: directKm },
+          astar: { path: pathNames, distance: directKm },
+          pathNames,
+          roadCoords,
+          pickupCoords: startResolved.coords,
+          dropCoords: endResolved.coords,
+          pickupLabel: startResolved.label,
+          dropLabel: endResolved.label,
+          distanceKm: directKm
+        };
+      }
+
+      // Draw calculated route on map
+      function renderRouteOnMap(routeData) {
+        if (!map) return;
+        routeLayerGroup.clearLayers();
+
+        // Outer border + inner route line for clean contrast
+        L.polyline(routeData.roadCoords, {
+          color: '#14532d',
+          weight: 7,
+          opacity: 0.35
+        }).addTo(routeLayerGroup);
+
+        const poly = L.polyline(routeData.roadCoords, {
+          color: '#16a34a',
+          weight: 4.5,
+          opacity: 0.95
+        }).addTo(routeLayerGroup);
+
+        const startPin = L.divIcon({
+          className: '',
+          html: `<div class="hub-pin-marker start">A • ${routeData.pickupLabel}</div>`,
+          iconSize: [0, 0],
+          iconAnchor: [14, 28]
+        });
+
+        const endPin = L.divIcon({
+          className: '',
+          html: `<div class="hub-pin-marker end">B • ${routeData.dropLabel}</div>`,
+          iconSize: [0, 0],
+          iconAnchor: [14, 28]
+        });
+
+        L.marker(routeData.pickupCoords, { icon: startPin }).addTo(routeLayerGroup);
+        L.marker(routeData.dropCoords, { icon: endPin }).addTo(routeLayerGroup);
+
+        map.fitBounds(poly.getBounds(), {
+          paddingTopLeft: [420, 40],
+          paddingBottomRight: [40, 40],
+          maxZoom: 15
+        });
+      }
+
+      // Load registered drivers from users.xlsx via /api/drivers and spawn nearby map coordinates
+      async function loadAvailableDrivers(pickupCoords, fareRs) {
+        let apiDrivers = [];
+        try {
+          const res = await fetch('/api/drivers');
+          if (res.ok) {
+            apiDrivers = await res.json();
+          }
+        } catch (err) {
+          console.error('Failed to fetch /api/drivers:', err);
+        }
+
+        // Supplement with active fleet drivers only if fewer than 3 drivers in Excel
+        const backupFleet = [
+          { id: 901, name: 'Vikram Negi', sex: 'Male', vehicleType: 'Three Seater', vehicleNo: 'UK-07-RE-4120' },
+          { id: 902, name: 'Priya Bisht', sex: 'Female', vehicleType: 'Four Seater', vehicleNo: 'UK-07-TA-7731' },
+          { id: 903, name: 'Manoj Chauhan', sex: 'Male', vehicleType: 'Six Seater', vehicleNo: 'UK-07-TB-2094' }
+        ];
+
+        const combined = [...apiDrivers];
+        backupFleet.forEach(b => {
+          if (combined.length < 4 && !combined.some(d => d.name === b.name)) {
+            combined.push(b);
+          }
+        });
+
+        // Deterministic radial offsets (~0.7km to ~2.1km around pickupCoords)
+        const offsets = [
+          [0.011, 0.012],
+          [-0.009, 0.014],
+          [0.014, -0.010],
+          [-0.012, -0.008],
+          [0.007, 0.016],
+          [-0.015, 0.006]
+        ];
+
+        loadedDrivers = combined.map((d, idx) => {
+          const [dLat, dLng] = offsets[idx % offsets.length];
+          const driverCoords = [pickupCoords[0] + dLat, pickupCoords[1] + dLng];
+          const distKm = Number(haversineDistance(driverCoords, pickupCoords).toFixed(2));
+          const etaMins = Math.max(2, Math.round(distKm * 3.2));
+          const rating = (4.6 + ((idx * 17) % 4) * 0.1).toFixed(1);
+
+          return {
+            ...d,
+            coords: driverCoords,
+            distanceKm: distKm,
+            etaMins,
+            rating,
+            fare: fareRs
+          };
+        });
+
+        loadedDrivers.sort((a, b) => a.distanceKm - b.distanceKm);
+        renderDriversUI(loadedDrivers);
+      }
+
+      function renderDriversUI(drivers) {
+        const section = document.getElementById('driversSection');
+        const list = document.getElementById('driversList');
+        const badge = document.getElementById('driversCountBadge');
+
+        document.getElementById('trackingSection').style.display = 'none';
+        section.style.display = 'flex';
+        badge.textContent = `${drivers.length} online`;
+        list.innerHTML = '';
+
+        if (map && idleDriversLayerGroup) {
+          idleDriversLayerGroup.clearLayers();
+        }
+
+        drivers.forEach(driver => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'driver-card';
+          card.dataset.driverId = driver.id;
+          card.innerHTML = `
+            <div class="driver-left">
+              <div class="driver-avatar">🚕</div>
+              <div class="driver-meta">
+                <div class="driver-name-row">
+                  <span class="driver-name">${driver.name}</span>
+                  <span class="driver-rating">★ ${driver.rating}</span>
+                </div>
+                <div class="driver-vehicle">${driver.vehicleType} • ${driver.sex}</div>
+                <span class="driver-plate">${driver.vehicleNo}</span>
+              </div>
+            </div>
+            <div class="driver-right">
+              <div class="driver-eta">${driver.etaMins} min</div>
+              <div class="driver-dist">${driver.distanceKm} km away</div>
+              <div class="driver-fare">₹${driver.fare}</div>
+            </div>
+          `;
+          card.addEventListener('click', () => startDriverApproachSimulation(driver));
+          list.appendChild(card);
+
+          // Place idle driver marker on map
+          if (map && idleDriversLayerGroup) {
+            const markerIcon = L.divIcon({
+              className: '',
+              html: `<div class="driver-map-marker" title="${driver.name}">🚕</div>`,
+              iconSize: [36, 36],
+              iconAnchor: [18, 18]
+            });
+            const m = L.marker(driver.coords, { icon: markerIcon }).addTo(idleDriversLayerGroup);
+            m.bindTooltip(`${driver.name} (${driver.vehicleType}) • ${driver.etaMins} min`, {
+              direction: 'top',
+              offset: [0, -16]
+            });
+            m.on('click', () => startDriverApproachSimulation(driver));
+          }
+        });
+      }
+
+      // Stop any running animation cleanly
+      function stopSimulation() {
+        if (animFrameId) {
+          cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+        }
+        if (simulationLayerGroup) {
+          simulationLayerGroup.clearLayers();
+        }
+      }
+
+      // Zomato-style Live Rider Approaching Simulation
+      async function startDriverApproachSimulation(driver) {
+        if (!activeRouteData) return;
+        stopSimulation();
+        selectedDriver = driver;
+
+        // Highlight card & switch view to Live Tracking Card
+        document.getElementById('driversSection').style.display = 'none';
+        const trackingSection = document.getElementById('trackingSection');
+        trackingSection.style.display = 'block';
+
+        const badge = document.getElementById('trackingBadge');
+        const etaText = document.getElementById('trackingEtaText');
+        const statusText = document.getElementById('trackingStatusText');
+        const progressFill = document.getElementById('trackingProgressFill');
+        const distRemainingEl = document.getElementById('trackingDistanceRemaining');
+        const startTripBtn = document.getElementById('startTripBtn');
+
+        badge.className = 'tracking-badge';
+        badge.textContent = '🟢 Rider Assigned';
+        etaText.textContent = `${driver.etaMins} min`;
+        statusText.textContent = `${driver.name} accepted your ride and is heading toward you!`;
+        progressFill.style.width = '4%';
+        startTripBtn.style.display = 'none';
+
+        document.getElementById('trackingDriverName').textContent = `${driver.name} (★ ${driver.rating})`;
+        document.getElementById('trackingVehicleInfo').textContent = `${driver.vehicleType} • ${driver.vehicleNo}`;
+        document.getElementById('trackingRidePin').textContent = String(1000 + ((driver.id * 733) % 9000));
+
+        // Hide other idle markers during active tracking
+        if (idleDriversLayerGroup) idleDriversLayerGroup.clearLayers();
+
+        // Build approach path (try OSRM road route first, fallback to smooth curved path)
+        const pickupTarget = activeRouteData.pickupCoords;
+        let rawApproach = await fetchRoadPolyline([driver.coords, pickupTarget]);
+        if (!rawApproach || rawApproach.length <= 2) {
+          rawApproach = buildCurvedApproachPath(driver.coords, pickupTarget, 45);
+        }
+
+        const pathPoints = resamplePolyline(rawApproach, 500);
+        const totalApproachKm = haversineDistance(driver.coords, pickupTarget);
+
+        // Draw approach route & animated moving driver marker
+        const remainingPolyline = L.polyline(pathPoints, {
+          color: '#16a34a',
+          weight: 5,
+          dashArray: '8, 8',
+          opacity: 0.9
+        }).addTo(simulationLayerGroup);
+
+        const movingIcon = L.divIcon({
+          className: '',
+          html: `<div class="driver-map-marker moving">🚕</div>`,
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
+        });
+
+        const riderMarker = L.marker(pathPoints[0], {
+          icon: movingIcon,
+          zIndexOffset: 1000
+        }).addTo(simulationLayerGroup);
+
+        riderMarker.bindTooltip(`${driver.name} • On the way`, {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -24]
+        });
+
+        // Fit map cleanly around rider + user pickup point
+        map.fitBounds(L.latLngBounds([driver.coords, pickupTarget]), {
+          paddingTopLeft: [420, 70],
+          paddingBottomRight: [60, 60],
+          maxZoom: 16
+        });
+
+        // Slow, realistic street-speed animation (~48 seconds at 1x speed)
+        const baseDurationMs = 48000;
+        let progress = 0;
+        let lastTs = null;
+
+        function animateApproach(ts) {
+          if (lastTs === null) lastTs = ts;
+          const dt = ts - lastTs;
+          lastTs = ts;
+
+          progress = Math.min(1, progress + (dt * simulationSpeedMultiplier) / baseDurationMs);
+          const { index: idx, latLng: currentPos } = getInterpolatedLatLng(pathPoints, progress);
+
+          riderMarker.setLatLng(currentPos);
+          remainingPolyline.setLatLngs([currentPos, ...pathPoints.slice(idx + 1)]);
+
+          const remMeters = Math.max(0, Math.round(totalApproachKm * 1000 * (1 - progress)));
+          const remSeconds = Math.max(0, Math.ceil((1 - progress) * driver.etaMins * 60));
+          const mins = Math.floor(remSeconds / 60);
+          const secs = String(remSeconds % 60).padStart(2, '0');
+
+          progressFill.style.width = `${Math.round(progress * 100)}%`;
+
+          if (progress < 0.35) {
+            badge.textContent = '🚕 On the way';
+            statusText.textContent = `${driver.name} is driving toward ${activeRouteData.pickupLabel}...`;
+          } else if (progress < 0.85) {
+            badge.textContent = '🚕 Approaching you';
+            statusText.textContent = `${driver.name} is nearby! Get ready at pickup point.`;
+          } else if (progress < 1) {
+            badge.textContent = '⚡ Arriving now';
+            statusText.textContent = `Almost there! Share Ride PIN with ${driver.name}.`;
+          }
+
+          if (progress < 1) {
+            etaText.textContent = remSeconds > 59 ? `${mins}m ${secs}s` : `${remSeconds}s`;
+            distRemainingEl.textContent = `${remMeters} meters away`;
+            riderMarker.setTooltipContent(`${driver.name} • ${remMeters}m away`);
+            animFrameId = requestAnimationFrame(animateApproach);
+          } else {
+            // Arrived!
+            badge.className = 'tracking-badge arrived';
+            badge.textContent = '🎉 Driver Arrived!';
+            etaText.textContent = 'Here';
+            statusText.textContent = `${driver.name} (${driver.vehicleNo}) has arrived at your location!`;
+            distRemainingEl.textContent = '0 meters away • Ready to board';
+            riderMarker.setTooltipContent(`${driver.name} • Arrived! 🎉`);
+            remainingPolyline.remove();
+            startTripBtn.style.display = 'block';
+          }
+        }
+
+        animFrameId = requestAnimationFrame(animateApproach);
+      }
+
+      // Bonus: Simulate actual trip from pickup to destination once arrived
+      function startTripSimulation() {
+        if (!activeRouteData || !selectedDriver) return;
+        stopSimulation();
+
+        const badge = document.getElementById('trackingBadge');
+        const etaText = document.getElementById('trackingEtaText');
+        const statusText = document.getElementById('trackingStatusText');
+        const progressFill = document.getElementById('trackingProgressFill');
+        const distRemainingEl = document.getElementById('trackingDistanceRemaining');
+        const startTripBtn = document.getElementById('startTripBtn');
+
+        startTripBtn.style.display = 'none';
+        badge.className = 'tracking-badge';
+        badge.textContent = '🛣️ Trip in Progress';
+        statusText.textContent = `En route to ${activeRouteData.dropLabel} with ${selectedDriver.name}...`;
+        progressFill.style.width = '0%';
+
+        const tripPoints = resamplePolyline(activeRouteData.roadCoords, 500);
+        const movingIcon = L.divIcon({
+          className: '',
+          html: `<div class="driver-map-marker moving">🚕</div>`,
+          iconSize: [44, 44],
+          iconAnchor: [22, 22]
+        });
+
+        const riderMarker = L.marker(tripPoints[0], { icon: movingIcon, zIndexOffset: 1000 }).addTo(simulationLayerGroup);
+        riderMarker.bindTooltip(`En route to ${activeRouteData.dropLabel}`, {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -24]
+        });
+
+        const tripDurationMs = 42000;
+        let progress = 0;
+        let lastTs = null;
+
+        function animateTrip(ts) {
+          if (lastTs === null) lastTs = ts;
+          const dt = ts - lastTs;
+          lastTs = ts;
+
+          progress = Math.min(1, progress + (dt * simulationSpeedMultiplier) / tripDurationMs);
+          const { latLng: currentPos } = getInterpolatedLatLng(tripPoints, progress);
+          riderMarker.setLatLng(currentPos);
+          progressFill.style.width = `${Math.round(progress * 100)}%`;
+
+          const remKm = Math.max(0, activeRouteData.distanceKm * (1 - progress)).toFixed(1);
+          if (progress < 1) {
+            etaText.textContent = `${remKm} km`;
+            distRemainingEl.textContent = `${remKm} km to ${activeRouteData.dropLabel}`;
+            animFrameId = requestAnimationFrame(animateTrip);
+          } else {
+            badge.className = 'tracking-badge arrived';
+            badge.textContent = '✅ Destination Reached';
+            etaText.textContent = 'Done';
+            statusText.textContent = `You arrived safely at ${activeRouteData.dropLabel}! Fare: ₹${activeRouteData.fareRs}`;
+            distRemainingEl.textContent = 'Trip completed';
+            riderMarker.setTooltipContent('Arrived at destination! ✅');
+
+            // Save completed simulation to Past Trips list
+            pastTripsData.unshift({
+              source: activeRouteData.pickupLabel,
+              destination: activeRouteData.dropLabel,
+              date: 'Just now',
+              distanceKm: activeRouteData.distanceKm,
+              fare: activeRouteData.fareRs,
+              driverName: selectedDriver.name,
+              vehicleType: selectedDriver.vehicleType,
+              status: 'Completed'
+            });
+            renderPastTrips();
+          }
+        }
+
+        animFrameId = requestAnimationFrame(animateTrip);
+      }
+
+      // Dummy Past Trips Data (click any trip to load route & drivers)
+      const pastTripsData = [
+        {
+          source: 'Clock Tower',
+          destination: 'ISBT',
+          date: 'Today, 9:15 AM',
+          distanceKm: 4.5,
+          fare: 18,
+          driverName: 'Rajesh Kumar',
+          vehicleType: 'Four Seater',
+          status: 'Completed'
+        },
+        {
+          source: 'Rajpur Road',
+          destination: 'Paltan Bazaar',
+          date: 'Yesterday, 6:40 PM',
+          distanceKm: 5.0,
+          fare: 22,
+          driverName: 'Jaspreet Singh',
+          vehicleType: 'Four Seater',
+          status: 'Completed'
+        },
+        {
+          source: 'Prem Nagar',
+          destination: 'Ballupur',
+          date: 'Nov 10, 11:20 AM',
+          distanceKm: 5.0,
+          fare: 15,
+          driverName: 'Vikram Negi',
+          vehicleType: 'Three Seater',
+          status: 'Completed'
+        },
+        {
+          source: 'Dehradun',
+          destination: 'Mussoorie Road',
+          date: 'Nov 8, 4:05 PM',
+          distanceKm: 9.0,
+          fare: 35,
+          driverName: 'Priya Bisht',
+          vehicleType: 'Four Seater',
+          status: 'Completed'
+        }
+      ];
+
+      function renderPastTrips() {
+        const listEl = document.getElementById('pastTripsList');
+        const countEl = document.getElementById('pastTripsCount');
+        if (!listEl) return;
+
+        countEl.textContent = String(pastTripsData.length);
+        listEl.innerHTML = '';
+
+        pastTripsData.forEach(trip => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'past-trip-item';
+          item.innerHTML = `
+            <div class="past-trip-top">
+              <span class="past-trip-route">${trip.source} → ${trip.destination}</span>
+              <span class="past-trip-fare">₹${trip.fare}</span>
+            </div>
+            <div class="past-trip-meta">
+              <span>${trip.date} • ${trip.distanceKm} km</span>
+              <span class="past-trip-status">${trip.status} ✓</span>
+            </div>
+            <div class="past-trip-meta" style="margin-top: 3px;">
+              <span>🚕 ${trip.driverName} (${trip.vehicleType})</span>
+              <span style="color: #166534; font-weight: 600;">Rebook →</span>
+            </div>
+          `;
+          item.addEventListener('click', () => {
+            document.getElementById('source').value = trip.source;
+            document.getElementById('destination').value = trip.destination;
+            document.getElementById('pastTripsDrawer').classList.remove('open');
+            const panel = document.getElementById('topLeftPanel');
+            panel.classList.remove('collapsed');
+            document.getElementById('togglePanelBtn').textContent = '▾';
+            handleFindRoute();
+          });
+          listEl.appendChild(item);
+        });
+      }
+
+      // Main Find Route & Drivers Handler
+      async function handleFindRoute() {
+        clearAlert();
+        stopSimulation();
+
+        const srcRaw = document.getElementById('source').value.trim();
+        const dstRaw = document.getElementById('destination').value.trim();
+
+        if (!srcRaw || !dstRaw) {
+          showAlert('Please enter both a starting point and a destination.', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('compare-btn');
+        btn.disabled = true;
+        btn.textContent = 'Calculating route & locating drivers...';
+
+        try {
+          const resolved = await resolveRoute(srcRaw, dstRaw);
+          const fw = resolved.fw;
+          const astar = resolved.astar;
+
+          const startMultiplier = priceMultiplier[resolved.pathNames[0]] || priceMultiplier['Default'];
+          const fwCost = Math.max(15, Math.ceil(fw.distance * 3 * startMultiplier));
+          const fwTime = Math.max(4, Math.ceil(fw.distance * 2.5));
+          const astarCost = Math.max(15, Math.ceil(astar.distance * 3 * startMultiplier));
+          const astarTime = Math.max(4, Math.ceil(astar.distance * 2.5));
+
+          activeRouteData = {
+            ...resolved,
+            fareRs: Math.min(fwCost, astarCost),
+            timeMin: Math.min(fwTime, astarTime)
+          };
+
+          // Render clean route summary & Google Maps button (no algorithm details)
+          document.getElementById('routeSummarySection').style.display = 'block';
+          document.getElementById('tripRouteLabel').textContent = `${activeRouteData.pickupLabel} → ${activeRouteData.dropLabel}`;
+          document.getElementById('bestRouteTag').textContent = `${activeRouteData.distanceKm} km • ~${activeRouteData.timeMin}m • ₹${activeRouteData.fareRs}`;
+
+          renderRouteOnMap(activeRouteData);
+          await loadAvailableDrivers(activeRouteData.pickupCoords, activeRouteData.fareRs);
+        } catch (err) {
+          showAlert(err.message || 'Could not compute route.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Find Best Route & Drivers →';
+        }
+      }
+
+      // Wire UI Events
+      document.getElementById('compare-btn').addEventListener('click', handleFindRoute);
+
+      document.getElementById('useLiveLocationBtn').addEventListener('click', () => {
+        document.getElementById('source').value = 'My Live Location';
+        if (map) map.flyTo(userLiveCoords, 15, { duration: 0.9 });
+      });
+
+      document.getElementById('swapLocationsBtn').addEventListener('click', () => {
+        const src = document.getElementById('source');
+        const dst = document.getElementById('destination');
+        const tmp = src.value;
+        src.value = dst.value;
+        dst.value = tmp;
+      });
+
+      // Quick hub chip clicks: fill empty source first, else fill destination
+      document.getElementById('quickHubChips').addEventListener('click', e => {
+        const chip = e.target.closest('.hub-chip');
+        if (!chip) return;
+        const hub = chip.dataset.hub;
+        const src = document.getElementById('source');
+        const dst = document.getElementById('destination');
+        if (!src.value.trim()) {
+          src.value = hub;
+        } else if (!dst.value.trim() || dst.value.trim() === src.value.trim()) {
+          if (src.value.trim() !== hub) dst.value = hub;
+        } else {
+          dst.value = hub;
+        }
+      });
+
+      document.getElementById('open-maps').addEventListener('click', () => {
+        if (!activeRouteData) return;
+        const origin = activeRouteData.pickupCoords.join(',');
+        const dest = activeRouteData.dropCoords.join(',');
+        window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`, '_blank');
+      });
+
+      document.getElementById('backToDriversBtn').addEventListener('click', () => {
+        stopSimulation();
+        if (activeRouteData && loadedDrivers.length > 0) {
+          renderDriversUI(loadedDrivers);
+          renderRouteOnMap(activeRouteData);
+        }
+      });
+
+      document.getElementById('speedToggleBtn').addEventListener('click', e => {
+        simulationSpeedMultiplier = simulationSpeedMultiplier === 1 ? 2.5 : 1;
+        e.target.textContent = simulationSpeedMultiplier > 1 ? '⚡ 2.5x ON' : '⚡ 2x Speed';
+      });
+
+      document.getElementById('startTripBtn').addEventListener('click', startTripSimulation);
+
+      document.getElementById('recenterBtn').addEventListener('click', () => {
+        if (map) {
+          map.flyTo(userLiveCoords, 15, { duration: 0.9 });
+          if (userLiveMarker) userLiveMarker.openPopup();
+        }
+      });
+
+      document.getElementById('togglePanelBtn').addEventListener('click', e => {
+        const panel = document.getElementById('topLeftPanel');
+        panel.classList.toggle('collapsed');
+        e.target.textContent = panel.classList.contains('collapsed') ? '▸' : '▾';
+      });
+
+      document.getElementById('pastTripsBtn').addEventListener('click', () => {
+        document.getElementById('pastTripsDrawer').classList.toggle('open');
+      });
+
+      document.getElementById('closePastTripsBtn').addEventListener('click', () => {
+        document.getElementById('pastTripsDrawer').classList.remove('open');
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        renderPastTrips();
+      });
+    })();
+  </script>
 </body>
 </html>
