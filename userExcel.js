@@ -24,7 +24,29 @@ function readUsersFromExcel() {
 // Helper: Save users array directly to users.xlsx
 function saveUsersToExcel(users) {
   try {
-    const ws = XLSX.utils.json_to_sheet(users);
+    const baseHeaders = [
+      'Name',
+      'Email',
+      'Password',
+      'Role',
+      'Sex',
+      'Aadhar',
+      'VehicleType',
+      'VehicleNo',
+      'Timestamp'
+    ];
+    const extraHeaders = [];
+    users.forEach(user => {
+      Object.keys(user || {}).forEach(key => {
+        if (!baseHeaders.includes(key) && !extraHeaders.includes(key)) {
+          extraHeaders.push(key);
+        }
+      });
+    });
+
+    const ws = XLSX.utils.json_to_sheet(users, {
+      header: [...baseHeaders, ...extraHeaders]
+    });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Users');
     XLSX.writeFile(wb, userFile);
@@ -63,15 +85,38 @@ function ensureAdminAccount() {
 ensureAdminAccount();
 
 // ✅ Add new user to users.xlsx (used during signup)
-function addUser({ name, email, password, role }) {
+function addUser({ name, email, password, role, sex, aadhar, vehicleType, vehicleNo }) {
   if (!name || !email || !password || !role) {
-    throw new Error('All fields are required');
+    throw new Error('All required fields must be filled');
   }
 
   const cleanEmail = email.trim();
   const cleanPassword = String(password).trim();
   const cleanName = name.trim();
   const cleanRole = role.trim();
+
+  let driverDetails = {};
+  if (cleanRole.toLowerCase() === 'driver') {
+    const cleanSex = sex ? String(sex).trim() : '';
+    const cleanAadhar = aadhar ? String(aadhar).replace(/[\s-]/g, '').trim() : '';
+    const cleanVehicleType = vehicleType ? String(vehicleType).trim() : '';
+    const cleanVehicleNo = vehicleNo ? String(vehicleNo).trim().toUpperCase() : '';
+
+    if (!cleanSex || !cleanAadhar || !cleanVehicleType || !cleanVehicleNo) {
+      throw new Error('All driver details (Sex, Aadhar, Vehicle Type, Vehicle No) are required');
+    }
+
+    if (!/^\d{12}$/.test(cleanAadhar)) {
+      throw new Error('Please enter a valid 12-digit Aadhar number');
+    }
+
+    driverDetails = {
+      Sex: cleanSex,
+      Aadhar: cleanAadhar,
+      VehicleType: cleanVehicleType,
+      VehicleNo: cleanVehicleNo
+    };
+  }
 
   const users = readUsersFromExcel();
 
@@ -81,7 +126,9 @@ function addUser({ name, email, password, role }) {
   );
 
   if (existingUser) {
-    throw new Error('An account with this email already exists');
+    const err = new Error('An account with this email already exists');
+    err.statusCode = 409;
+    throw err;
   }
 
   const newUser = {
@@ -89,6 +136,7 @@ function addUser({ name, email, password, role }) {
     Email: cleanEmail,
     Password: cleanPassword,
     Role: cleanRole,
+    ...driverDetails,
     Timestamp: new Date().toISOString()
   };
 
@@ -135,6 +183,9 @@ function getAllUsers() {
     name: u.Name,
     email: u.Email,
     role: u.Role,
+    sex: u.Sex || '',
+    vehicleType: u.VehicleType || '',
+    vehicleNo: u.VehicleNo || '',
     timestamp: u.Timestamp
   }));
 }
